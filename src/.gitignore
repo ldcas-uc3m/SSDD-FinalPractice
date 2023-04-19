@@ -1,0 +1,15 @@
+# C
+
+# exclude all executable files
+*
+!*.*
+!*/
+!Makefile
+
+*.o
+*.so
+
+
+# Python
+
+__pycache__/
