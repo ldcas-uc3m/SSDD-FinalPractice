@@ -1,7 +1,7 @@
-# Práctica Final: Servicio de envíıo de mensajes
+# Práctica Final: Servicio de envío de mensajes
 By Luis Daniel Casais Mezquida & Lucía María Moya Sans  
 Sistemas Distribuídos 22/23  
-Bachelor's Degree in Computer Science and Engineering, grp. 81  
+Bachelor's Degree in Computer Science and Engineering  
 Universidad Carlos III de Madrid
 
 
@@ -37,6 +37,8 @@ Universidad Carlos III de Madrid
     5. [Envío de un mensaje cliente-servidor](#85-envío-de-un-mensaje-cliente-servidor)
     6. [Envío de un mensaje servidor-cliente](#86-envío-de-un-mensaje-servidor-cliente)
     7. [Solicitud de usuarios conectados](#87-solicitud-de-usuarios-conectados)
+8. [Segunda parte](#9-segunda-parte)
+    1.[Desarrollo del servicio web](#91-desarrollo-del-servicio-web)
 
 
 ## 1. Objetivo
@@ -616,6 +618,30 @@ Cuando un cliente quiere saber los usuarios conectados en el servicio de mensaje
 6. Cierra la conexión.
 
 Recuerde que en el protocolo utilizado todas las cadenas de caracteres finalizan con el código ASCII `0` (`'\0'`).
+
+
+## 9. Segunda parte
+El objetivo de esta segunda parte de la práctica es ampliar la funcionalidad de trabajo
+realizado hasta ahora con servicios web.  
+
+El objetivo inicial de la práctica es desarrollar un servicio de notificacíon de mensajes entre usuarios conectados a Internet, de forma parecida, aunque con una funcionalidad mucho más simplificada, a lo que ocurre con la aplicacíon WhatsApp.  
+
+Se podrán enviar mensajes de texto de un tama˜no máximo de 256 bytes (incluyendo el código 0 que indica fin de cadena, es decir, como mucho la cadena almacenada en el mensaje tendrá una longitud máxima de 255 caracteres) y de forma opcional se podrá también formatear los mensajes enviados.  
+Los objetivos de esta segunda parte de la práctica son los siguientes:
+1. Desarrollar un servicio Web en Python que permita dar formato a los mensajes enviados por los usuarios del servicio de mensajería.
+2. Modificar el cliente desarrollado en Python en la parte anterior ([cliente.py](src/cliente.py)) para invocar al servicio web desarrollado.
+
+En las siguientes secciones de describe esta nueva funcionalidad.
+
+
+### 9.1. Desarrollo del servicio web
+Para el servicio web, se desarrollará y desplegará un servicio web desarrollado en Python siguiendo el material presentado en la asignatura. El servicio se desplegará, por simplicidad, en la máquina local donde ejecuta el cliente desarrollado en Python, aunque puede desplegarse en cualquier otra máquina (otra máquina de las aulas informáticas). Este servicio web tendrá una única operacíon que consistirá en convertir el texto enviado por los clientes en otro texto en el que todas los espacios en blanco existente entre las palabras se sustituye por un único espacio en blanco, de forma que todas las palabras del texto estén separadas por único espacio, con independencia del número de espacios que escriba el usuario.  
+
+Cada vez que en un cliente se introduce un mensaje para enviar a otro cliente, se enviará el mensaje en primer lugar al servidor que implementa el servicio web descrito anteriormente para obtener un nuevo mensaje, en el que todas las palabras están separadas por exactamente un espacio. Una vez obtenido el nuevo texto, éste es el que se enviará al servidor de mensajería.  
+Este funcionamiento se puede ver en la **Figura 8**.
+
+![Fig. 8: Servicio web a desarrollar](img/fig8.png)
+
 
 
 
