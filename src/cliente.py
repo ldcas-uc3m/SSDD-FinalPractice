@@ -3,16 +3,25 @@ import sys
 import PySimpleGUI as sg
 from enum import Enum
 import argparse
+import socket
+import threading
 
-class client :
+from lib.lines import *
+
+
+class client:
 
     # ******************** TYPES *********************
     # *
     # * @brief Return codes for the protocol methods
     class RC(Enum) :
         OK = 0
-        ERROR = 1
-        USER_ERROR = 2
+        USER_ERROR = 1
+        ERROR = 2
+        # for connect()
+        CONNECTED_ERROR = 2
+        OTHER_ERROR = 3
+
 
     # ****************** ATTRIBUTES ******************
     _server = None
@@ -22,43 +31,165 @@ class client :
     _alias = None
     _date = None
 
+
     # ******************** METHODS *******************
     # *
-    # * @param user - User name to register in the system
+    # * @brief Connects to the server and creates a socket
+    # *
+    # * @return sd  - Socket descriptor
+    def socket_connect():
+
+        # create socket
+        sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        # get server address
+        server = (client._username, client._port)
+
+        # establish connection
+        try:
+            sd.connect(server)
+        except ConnectionRefusedError:
+            print("Error en la conexión")
+            return
+
+        return sd
+    
+
+    # ******************** METHODS *******************
+    # *
+    # * @brief 
+    # *
+    # * @return 
+    def conversation(self):
+        while True:
+            pass
+
+
+    # *
+    # * @param user  - User id to register in the system
+    # * @param alias - User name to register in the system
+    # * @param date  - User birthdate
     # *
     # * @return OK if successful
     # * @return USER_ERROR if the user is already registered
     # * @return ERROR if another error occurred
     @staticmethod
-    def  register(user, window):
-        window['_SERVER_'].print("s> REGISTER OK")
-        #  Write your code here
-        return client.RC.ERROR
+    def register(user, alias, date, window):
+
+        try:
+            sd = client.socket_connect()  # FIXME: U sure?
+        except:
+            window['_SERVER_'].print("s> REGISTER FAIL")
+            return client.RC.USER_ERROR
+
+        try:
+            sendString("REGISTER")
+            sendString(user)
+            sendString(alias)
+            sendString(date)
+
+            # wait for result
+
+            result = readString(sd)
+
+            match result:
+                case client.RC.OK:
+                    window['_SERVER_'].print("s> REGISTER OK")
+                
+                case client.RC.USER_ERROR:
+                    window['_SERVER_'].print("s> USERNAME IN USE")
+                
+                case client.RC.ERROR:
+                    window['_SERVER_'].print("s> REGISTER FAIL")
+                
+                case _:
+                    window['_SERVER_'].print("s> REGISTER FAIL")
+                    sd.close()
+                    return client.RC.ERROR
+            
+            sd.close()
+            return result
+
+        except:
+            sd.close()
+            window['_SERVER_'].print("s> REGISTER FAIL")
+            return client.RC.ERROR
+
+
 
     # *
-    # 	 * @param user - User name to unregister from the system
+    # 	 * @param alias - User name to unregister from the system
     # 	 *
     # 	 * @return OK if successful
     # 	 * @return USER_ERROR if the user does not exist
     # 	 * @return ERROR if another error occurred
     @staticmethod
-    def  unregister(user, window):
+    def unregister(alias, window):
         window['_SERVER_'].print("s> UNREGISTER OK")
         #  Write your code here
         return client.RC.ERROR
 
 
     # *
-    # * @param user - User name to connect to the system
+    # * @param alias - User name to connect to the system
     # *
     # * @return OK if successful
     # * @return USER_ERROR if the user does not exist or if it is already connected
     # * @return ERROR if another error occurred
     @staticmethod
-    def  connect(user, window):
-        window['_SERVER_'].print("s> CONNECT OK")
-        #  Write your code here
-        return client.RC.ERROR
+    def connect(alias, window):
+        
+        # create new socket on free port
+        new_sd = socket.socket()
+        new_sd.bind(('', 0))  # by using 0 the system gives a random free port
+        port = new_sd.getsockname()[1]
+
+        # create thread
+        threading.Thread(target=client.conversation)  # FIXME: U sure?
+
+
+        # send message
+        try:
+            sd = client.socket_connect()  # FIXME: U sure?
+        except:
+            window['_SERVER_'].print("s> CONNECT FAIL")
+            return client.RC.OTHER_ERROR
+
+        try:
+            sendString("CONNECT")
+            sendString(alias)
+            sendString(port)
+
+            # wait for result
+
+            result = readString(sd)
+
+            match result:
+                case client.RC.OK:
+                    window['_SERVER_'].print("s> CONNECT OK")
+                
+                case client.RC.USER_ERROR:
+                    window['_SERVER_'].print("s> CONNECT FAIL, USER DOES NOT EXIST")
+                
+                case client.RC.CONNECTED_ERROR:
+                    window['_SERVER_'].print("s> USER ALREADY CONNECTED")
+                    
+                case client.RC.OTHER_ERROR:
+                    window['_SERVER_'].print("s> CONNECT FAIL")
+                
+                case _:
+                    window['_SERVER_'].print("s> CONNECT FAIL")
+                    sd.close()
+                    return client.RC.OTHER_ERROR
+            
+            sd.close()
+            return result
+
+        except:
+            sd.close()
+            window['_SERVER_'].print("s> CONNECT FAIL")
+            return client.RC.OTHER_ERROR
+        
 
 
     # *
@@ -68,7 +199,7 @@ class client :
     # * @return USER_ERROR if the user does not exist
     # * @return ERROR if another error occurred
     @staticmethod
-    def  disconnect(user, window):
+    def disconnect(alias, window):
         window['_SERVER_'].print("s> DISCONNECT OK")
         #  Write your code here
         return client.RC.ERROR
@@ -81,9 +212,9 @@ class client :
     # * @return USER_ERROR if the user is not connected (the message is queued for delivery)
     # * @return ERROR the user does not exist or another error occurred
     @staticmethod
-    def  send(user, message, window):
+    def send(alias_src, alias_dst, message, window):
         window['_SERVER_'].print("s> SEND MESSAGE OK")
-        print("SEND " + user + " " + message)
+        print("SEND " + alias_dst + " " + message)
         #  Write your code here
         return client.RC.ERROR
 
@@ -97,14 +228,14 @@ class client :
     # * @return USER_ERROR if the user is not connected (the message is queued for delivery)
     # * @return ERROR the user does not exist or another error occurred
     @staticmethod
-    def  sendAttach(user, message, file, window):
+    def sendAttach(user, message, file, window):
         window['_SERVER_'].print("s> SENDATTACH MESSAGE OK")
         print("SEND ATTACH " + user + " " + message + " " + file)
         #  Write your code here
         return client.RC.ERROR
 
     @staticmethod
-    def  connectedUsers(window):
+    def connectedUsers(window):
         window['_SERVER_'].print("s> CONNECTED USERS OK")
         #  Write your code here
         return client.RC.ERROR
@@ -112,12 +243,15 @@ class client :
 
     @staticmethod
     def window_register():
-        layout_register = [[sg.Text('Ful Name:'),sg.Input('Text',key='_REGISTERNAME_', do_not_clear=True, expand_x=True)],
-                            [sg.Text('Alias:'),sg.Input('Text',key='_REGISTERALIAS_', do_not_clear=True, expand_x=True)],
-                            [sg.Text('Date of birth:'),sg.Input('',key='_REGISTERDATE_', do_not_clear=True, expand_x=True, disabled=True, use_readonly_for_disable=False),
-                            sg.CalendarButton("Select Date",close_when_date_chosen=True, target="_REGISTERDATE_", format='%d-%m-%Y',size=(10,1))],
-                            [sg.Button('SUBMIT', button_color=('white', 'blue'))]
-                            ]
+        layout_register = [
+            [sg.Text('Ful Name:'), sg.Input('Text',key='_REGISTERNAME_', do_not_clear=True, expand_x=True)],
+            [sg.Text('Alias:'), sg.Input('Text',key='_REGISTERALIAS_', do_not_clear=True, expand_x=True)],
+            [
+                sg.Text('Date of birth:'), sg.Input('',key='_REGISTERDATE_', do_not_clear=True, expand_x=True, disabled=True, use_readonly_for_disable=False),
+                sg.CalendarButton("Select Date",close_when_date_chosen=True, target="_REGISTERDATE_", format='%d-%m-%Y',size=(10,1))
+            ],
+            [sg.Button('SUBMIT', button_color=('white', 'blue'))]
+        ]
 
         layout = [[sg.Column(layout_register, element_justification='center', expand_x=True, expand_y=True)]]
 
@@ -152,7 +286,7 @@ class client :
     # *
     # * @brief Parses program execution arguments
     @staticmethod
-    def  parseArguments(argv) :
+    def parseArguments(argv):
         parser = argparse.ArgumentParser()
         parser.add_argument('-s', type=str, required=True, help='Server IP')
         parser.add_argument('-p', type=int, required=True, help='Server Port')
@@ -163,8 +297,8 @@ class client :
             return False
 
         if ((args.p < 1024) or (args.p > 65535)):
-            parser.error("Error: Port must be in the range 1024 <= port <= 65535");
-            return False;
+            parser.error("Error: Port must be in the range 1024 <= port <= 65535")
+            return False
 
         client._server = args.s
         client._port = args.p
@@ -178,20 +312,29 @@ class client :
             client.usage()
             exit()
 
-        lay_col = [[sg.Button('REGISTER',expand_x=True, expand_y=True),
+        lay_col = [
+            [
+                sg.Button('REGISTER',expand_x=True, expand_y=True),
                 sg.Button('UNREGISTER',expand_x=True, expand_y=True),
                 sg.Button('CONNECT',expand_x=True, expand_y=True),
                 sg.Button('DISCONNECT',expand_x=True, expand_y=True),
-                sg.Button('CONNECTED USERS',expand_x=True, expand_y=True)],
-                [sg.Text('Dest:'),sg.Input('User',key='_INDEST_', do_not_clear=True, expand_x=True),
+                sg.Button('CONNECTED USERS',expand_x=True, expand_y=True)
+            ],
+            [
+                sg.Text('Dest:'),sg.Input('User',key='_INDEST_', do_not_clear=True, expand_x=True),
                 sg.Text('Message:'),sg.Input('Text',key='_IN_', do_not_clear=True, expand_x=True),
-                sg.Button('SEND',expand_x=True, expand_y=False)],
-                [sg.Text('Attached File:'), sg.In(key='_FILE_', do_not_clear=True, expand_x=True), sg.FileBrowse(),
-                sg.Button('SENDATTACH',expand_x=True, expand_y=False)],
-                [sg.Multiline(key='_CLIENT_', disabled=True, autoscroll=True, size=(60,15), expand_x=True, expand_y=True),
-                sg.Multiline(key='_SERVER_', disabled=True, autoscroll=True, size=(60,15), expand_x=True, expand_y=True)],
-                [sg.Button('QUIT', button_color=('white', 'red'))]
-            ]
+                sg.Button('SEND',expand_x=True, expand_y=False)
+            ],
+            [
+                sg.Text('Attached File:'), sg.In(key='_FILE_', do_not_clear=True, expand_x=True), sg.FileBrowse(),
+                sg.Button('SENDATTACH',expand_x=True, expand_y=False)
+            ],
+            [
+                sg.Multiline(key='_CLIENT_', disabled=True, autoscroll=True, size=(60,15), expand_x=True, expand_y=True),
+                sg.Multiline(key='_SERVER_', disabled=True, autoscroll=True, size=(60,15), expand_x=True, expand_y=True)
+            ],
+            [sg.Button('QUIT', button_color=('white', 'red'))]
+        ]
 
 
         layout = [[sg.Column(lay_col, element_justification='center', expand_x=True, expand_y=True)]]
@@ -207,9 +350,9 @@ class client :
                 sg.Popup('Closing Client APP', title='Closing', button_type=5, auto_close=True, auto_close_duration=1)
                 break
 
-            #if (values['_IN_'] == '') and (event != 'REGISTER' and event != 'CONNECTED USERS'):
-             #   window['_CLIENT_'].print("c> No text inserted")
-             #   continue
+            # if (values['_IN_'] == '') and (event != 'REGISTER' and event != 'CONNECTED USERS'):
+            #    window['_CLIENT_'].print("c> No text inserted")
+            #    continue
 
             if (client._alias == None or client._username == None or client._alias == 'Text' or client._username == 'Text' or client._date == None) and (event != 'REGISTER'):
                 sg.Popup('NOT REGISTERED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
@@ -223,7 +366,7 @@ class client :
                     continue
 
                 window['_CLIENT_'].print('c> REGISTER ' + client._alias)
-                client.register(client._alias, window)
+                client.register(client._user, client._alias, client._date, window)
 
             elif (event == 'UNREGISTER'):
                 window['_CLIENT_'].print('c> UNREGISTER ' + client._alias)
@@ -232,7 +375,7 @@ class client :
 
             elif (event == 'CONNECT'):
                 window['_CLIENT_'].print('c> CONNECT ' + client._alias)
-                client.connect(client._alias, window)
+                client.connect(client._alias, client._window)
 
 
             elif (event == 'DISCONNECT'):
@@ -244,7 +387,7 @@ class client :
                 window['_CLIENT_'].print('c> SEND ' + values['_INDEST_'] + " " + values['_IN_'])
 
                 if (values['_INDEST_'] != '' and values['_IN_'] != '' and values['_INDEST_'] != 'User' and values['_IN_'] != 'Text') :
-                    client.send(values['_INDEST_'], values['_IN_'], window)
+                    client.send(client._alias, values['_INDEST_'], values['_IN_'], window)
                 else :
                     window['_CLIENT_'].print("Syntax error. Insert <destUser> <message>")
 

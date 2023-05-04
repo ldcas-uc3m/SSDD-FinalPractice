@@ -78,7 +78,7 @@ El objetivo es diseñar y desarrollar los dos siguientes programas:
 ## 4. Prerrequisitos
 Para poder utilizar la interfaz de usuario proporcionada, el primer paso consiste en tener todas las dependencias instaladas. En primer lugar, el usuario debe asegurarse de tener instalada una versión de Python igual o superior a la versión 3.10.
 ```bash
-python3 - -version
+python3 --version
 ```
 Si el usuario no posee esta versión de Python se puede instalar de la siguiente forma:
 ```bash
@@ -647,3 +647,41 @@ Este funcionamiento se puede ver en la **Figura 8**.
 
 
 # Instalación y ejecución
+
+## Cliente
+
+Asegurate de tener instalada una versión de Python igual o superior a la versión 3.10.  
+Puedes comprobarla con:
+```bash
+python3 --version
+```
+(dependiendo de la instalación, a veces es necesario usar `python` en vez de `python3`)
+
+De cualquier forma se puede descargar desde [su página web](https://www.python.org/downloads/).  
+
+Una vez instalada la versión de Python, se deberán instalar las librerías:
+```bash
+pip3 install pysimplegui
+```
+
+Puede que sea necesario instalar [tkinter](https://docs.python.org/es/3/library/tkinter.html):
+```bash
+sudo apt-get install python3-tk
+```
+
+Windows es posible que de por culo y quizás sea necesario usar:
+```powershell
+python -m pip install PySimpleGUI
+```
+
+Una vez se han instalado todos los paquetes previos, se podrá ejecutar el programa cliente de la siguiente forma:
+```bash
+python3 ./client.py -s <IP> -p <PUERTO>
+```
+
+Por e.g.: 
+```bash
+$ python3 ./client.py -s localhost -p 8888
+```
+
+## Servidor
