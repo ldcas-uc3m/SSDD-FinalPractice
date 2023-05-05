@@ -30,6 +30,8 @@ class client:
     _username = None
     _alias = None
     _date = None
+    conversation_sd = None
+    id = 0
 
 
     # ******************** METHODS *******************
@@ -60,8 +62,12 @@ class client:
     # * @brief 
     # *
     # * @return 
-    def conversation(self):
+    def conversation(sd: socket.socket, window: sg.Window):
         while True:
+            client.conversation_sd = sd.accept()[0]
+
+            msg = readString(sd)
+            # TODO: show messages
             pass
 
 
@@ -74,14 +80,13 @@ class client:
     # * @return USER_ERROR if the user is already registered
     # * @return ERROR if another error occurred
     @staticmethod
-    def register(user, alias, date, window):
+    def register(user, alias, date, window: sg.Window):
 
         try:
-            sd = client.socket_connect()  # FIXME: U sure?
+            sd = client.socket_connect()
         except:
             window['_SERVER_'].print("s> REGISTER FAIL")
-            return client.RC.USER_ERROR
-
+            return
         try:
             sendString("REGISTER")
             sendString(user)
@@ -90,9 +95,7 @@ class client:
 
             # wait for result
 
-            result = readString(sd)
-
-            match result:
+            match readString(sd):
                 case client.RC.OK:
                     window['_SERVER_'].print("s> REGISTER OK")
                 
@@ -104,16 +107,12 @@ class client:
                 
                 case _:
                     window['_SERVER_'].print("s> REGISTER FAIL")
-                    sd.close()
-                    return client.RC.ERROR
             
             sd.close()
-            return result
 
         except:
             sd.close()
             window['_SERVER_'].print("s> REGISTER FAIL")
-            return client.RC.ERROR
 
 
 
@@ -124,10 +123,37 @@ class client:
     # 	 * @return USER_ERROR if the user does not exist
     # 	 * @return ERROR if another error occurred
     @staticmethod
-    def unregister(alias, window):
-        window['_SERVER_'].print("s> UNREGISTER OK")
-        #  Write your code here
-        return client.RC.ERROR
+    def unregister(alias, window: sg.Window):
+        
+        try:
+            sd = client.socket_connect()
+        except:
+            window['_SERVER_'].print("s> UNREGISTER FAIL")
+            return
+        try:
+            sendString("UNREGISTER")
+            sendString(alias)
+
+            # wait for result
+
+            match readString(sd):
+                case client.RC.OK:
+                    window['_SERVER_'].print("s> UNREGISTER OK")
+                
+                case client.RC.USER_ERROR:
+                    window['_SERVER_'].print("s> USER DOES NOT EXIST")
+                
+                case client.RC.ERROR:
+                    window['_SERVER_'].print("s> REGISTER FAIL")
+                
+                case _:
+                    window['_SERVER_'].print("s> REGISTER FAIL")
+            
+            sd.close()
+
+        except:
+            sd.close()
+            window['_SERVER_'].print("s> REGISTER FAIL")
 
 
     # *
@@ -137,7 +163,7 @@ class client:
     # * @return USER_ERROR if the user does not exist or if it is already connected
     # * @return ERROR if another error occurred
     @staticmethod
-    def connect(alias, window):
+    def connect(alias, window: sg.Window):
         
         # create new socket on free port
         new_sd = socket.socket()
@@ -145,15 +171,15 @@ class client:
         port = new_sd.getsockname()[1]
 
         # create thread
-        threading.Thread(target=client.conversation)  # FIXME: U sure?
+        threading.Thread(target=client.conversation, args=(new_sd, window))
 
 
         # send message
         try:
-            sd = client.socket_connect()  # FIXME: U sure?
+            sd = client.socket_connect()
         except:
             window['_SERVER_'].print("s> CONNECT FAIL")
-            return client.RC.OTHER_ERROR
+            return
 
         try:
             sendString("CONNECT")
@@ -162,9 +188,7 @@ class client:
 
             # wait for result
 
-            result = readString(sd)
-
-            match result:
+            match readString(sd):
                 case client.RC.OK:
                     window['_SERVER_'].print("s> CONNECT OK")
                 
@@ -180,15 +204,13 @@ class client:
                 case _:
                     window['_SERVER_'].print("s> CONNECT FAIL")
                     sd.close()
-                    return client.RC.OTHER_ERROR
             
             sd.close()
-            return result
 
         except:
             sd.close()
             window['_SERVER_'].print("s> CONNECT FAIL")
-            return client.RC.OTHER_ERROR
+
         
 
 
@@ -199,9 +221,12 @@ class client:
     # * @return USER_ERROR if the user does not exist
     # * @return ERROR if another error occurred
     @staticmethod
-    def disconnect(alias, window):
+    def disconnect(alias, window: sg.Window):
         window['_SERVER_'].print("s> DISCONNECT OK")
         #  Write your code here
+
+        # close socket (client.conversation_sd) -> raises exception -> catch it
+
         return client.RC.ERROR
 
     # *
@@ -212,11 +237,47 @@ class client:
     # * @return USER_ERROR if the user is not connected (the message is queued for delivery)
     # * @return ERROR the user does not exist or another error occurred
     @staticmethod
-    def send(alias_src, alias_dst, message, window):
-        window['_SERVER_'].print("s> SEND MESSAGE OK")
-        print("SEND " + alias_dst + " " + message)
-        #  Write your code here
-        return client.RC.ERROR
+    def send(alias_src, alias_dst, message, window: sg.Window):
+        # print("SEND " + alias_dst + " " + message)
+        try:
+            sd = client.socket_connect()
+        except:
+            window['_SERVER_'].print("s> SEND FAIL")
+            return
+        try:
+            sendString("SEND")
+            sendString(alias_src)
+            sendString(alias_dst)
+            sendString(message)
+
+            # wait for result
+
+            match readString(sd):
+                case client.RC.OK:
+                    window['_SERVER_'].print("s> SEND OK - MESSAGE " + client.id)
+                    try:
+                        id = int(readString(sd))
+                        window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
+                    except:
+                        pass
+                
+                case client.RC.USER_ERROR:
+                    window['_SERVER_'].print("s> SEND FAIL / USER DOES NOT EXIST")
+                
+                case client.RC.ERROR:
+                    window['_SERVER_'].print("s> SEND FAIL")
+                
+                case _:
+                    window['_SERVER_'].print("s> SEND FAIL")
+            
+
+            sd.close()
+            client.id += 1
+
+        except:
+            sd.close()
+            window['_SERVER_'].print("s> REGISTER FAIL")
+        
 
     # *
     # * @param user    - Receiver user name
@@ -228,7 +289,7 @@ class client:
     # * @return USER_ERROR if the user is not connected (the message is queued for delivery)
     # * @return ERROR the user does not exist or another error occurred
     @staticmethod
-    def sendAttach(user, message, file, window):
+    def sendAttach(user, message, file, window: sg.Window):
         window['_SERVER_'].print("s> SENDATTACH MESSAGE OK")
         print("SEND ATTACH " + user + " " + message + " " + file)
         #  Write your code here
@@ -366,7 +427,7 @@ class client:
                     continue
 
                 window['_CLIENT_'].print('c> REGISTER ' + client._alias)
-                client.register(client._user, client._alias, client._date, window)
+                client.register(client._username, client._alias, client._date, window)
 
             elif (event == 'UNREGISTER'):
                 window['_CLIENT_'].print('c> UNREGISTER ' + client._alias)
@@ -375,7 +436,7 @@ class client:
 
             elif (event == 'CONNECT'):
                 window['_CLIENT_'].print('c> CONNECT ' + client._alias)
-                client.connect(client._alias, client._window)
+                client.connect(client._alias, window)
 
 
             elif (event == 'DISCONNECT'):

@@ -39,7 +39,7 @@ def sendString(msg: str, sd: socket.socket):
     # * @param sd    - socket
     # *
 
-    if len(msg) > MAX_LINE:
+    if len(msg) > MAX_LINE - 1:
         raise ExceededMaximumLineException
 
     sd.sendall(msg.encode() + b'\0')
