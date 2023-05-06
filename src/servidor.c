@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <arpa/inet.h>
 
 #include "lib/server_impl.h"
 #include "lib/comm.h"
@@ -51,184 +52,430 @@ void sigintHandler(int sig_num) {
 	exit(0);
 }
 
+int registerUserServer(int local_sd, char* alias){
 
-void *tratar_peticion(int* sd) {
-    struct Peticion pet;
+    /*
+    Receives a string with the username, another with the alias and other
+    with the birth date
+    */
+
+    char username[MAX_LINE];
+    char datetime[MAX_LINE];
+
+   //Receive the username
+
+    readLine(local_sd, username, MAX_LINE);
+
+   //Recieve the alias
+
+    readLine(local_sd, &(alias), MAX_LINE);
+
+   //Receive the date of birth
+
+    readLine(local_sd, datetime, MAX_LINE);
+
+   //Register the user
+
+    return register_user(username, alias, datetime);
+
+}
+
+int unregisterUserServer(int local_sd, char* alias){
+
+    /*
+    Receives a string with the alias and unregisters the user
+    */
+
+   //Recieve the alias
+
+    readLine(local_sd, &(alias), MAX_LINE);
+
+   //Unregister
+
+    return unregister_user(alias);
+
+}
+
+int connectUserServer(int local_sd, char* alias, int* nonSent, int* lastSent, char* IP){
+
+    /*
+    Receives the alias and the port of connection of the user and sets
+    its status as connected
+     */
+
+
+    //Receive the alias
+
+    readLine(local_sd, &(alias), MAX_LINE);
+
+    //Receive the port
+
     char buffer[MAX_LINE];
+
+    readLine(local_sd, buffer, MAX_LINE);
+    int port = atoi(buffer);
+    
+    return connect_user(alias, IP, port, nonSent, lastSent);
+}
+
+int disconnectUserServer(int local_sd, char* alias, char* IP){
+
+    /*
+    Receives the alias and sets the status as disconnected
+     */
+
+    // Receive the alias
+
+    readLine(local_sd, &(alias), MAX_LINE);
+
+    // Disconnect the user
+
+    return disconnect_user(alias, IP);
+
+}
+
+int sendMessageStoreServer(int local_sd, char* alias, char* alias2, int* identifier){
+
+    /*
+        Stores a message sent from a user to the other.
+    */
+
+    //Receive the sender alias
+
+    readLine(local_sd, &(alias), MAX_LINE);
+
+    //Receive the receiver alias
+
+    readLine(local_sd, &(alias2), MAX_LINE);
+
+    //Receive the message
+
+    char message[MAX_LINE];
+
+    readLine(local_sd, message, MAX_LINE);
+
+    return sendMessage_store(alias, alias2, message, identifier);
+
+}
+
+int connectedUsersServer(int local_sd, int* connections, char** users, char* IP){
+
+    /*
+        Show the list of connected users to the server
+    */
+
+    if (userConnected(IP)==1){
+        
+        if (connectedUsers(users) == 0){
+            return 0;
+        } else{
+            return 2;
+        }
+        
+    }else if (userConnected(IP) == 0){
+        Log("User not connected\n");
+        return 1;
+    }else{
+        return 2;
+    }
+
+}
+
+int sendAck(char* aliasSender, int identifier){
+    int new_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    struct sockaddr_in client_addr;
+
+    int port;
+    char* IP = (char*) malloc(MAX_LINE*sizeof(char));
+
+    if (getIPPort(aliasSender, IP, &port)==0){
+        client_addr.sin_addr.s_addr = inet_addr(IP);
+        client_addr.sin_family = AF_INET;
+        client_addr.sin_port = htons(port);
+        if (connect(new_socket, (struct sockaddr *) &client_addr, sizeof(client_addr))==-1){
+            Log("Error when connecting to the user");
+            return -1;
+        }else{
+            char buffer[MAX_LINE];
+            sprintf(buffer, "%s", "SEND_MESS_ACK");
+            sendMessage(new_socket, buffer, strlen(buffer) + 1);
+
+            sprintf(buffer, "%i", identifier);
+            sendMessage(new_socket, buffer, strlen(buffer) + 1);
+
+            if (close(new_socket)==-1){
+                return -1;
+            }
+        }
+    }else{
+        return -1;
+    }
+
+    return 0;
+}
+
+int deliver_Message(char* alias, char* aliasSender, int identifier){
+
+    int new_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    struct sockaddr_in client_addr;
+    char* message = (char*) malloc(MAX_CHAR*sizeof(char));
+    int port;
+    char* IP = (char*) malloc(MAX_CHAR*sizeof(char));
+
+    sendMessage_deliver(aliasSender, alias, message, identifier, IP, &port);
+
+    client_addr.sin_addr.s_addr = inet_addr(IP);
+    client_addr.sin_family = AF_INET;
+    client_addr.sin_port = htons(port);
+
+    if (connect(new_socket, (struct sockaddr *) &client_addr, sizeof(client_addr))==-1){
+        Log("Error when connecting to the user");
+        disconnect_user(alias, IP);
+        return -1;
+    }else{
+        char buffer[MAX_LINE];
+        sprintf(buffer, "%s", "SEND_MESSAGE");
+        sendMessage(new_socket, buffer, strlen(buffer) + 1);
+
+        sprintf(buffer, "%s", aliasSender);
+        sendMessage(new_socket, buffer, strlen(buffer) + 1);
+
+        sprintf(buffer, "%i", identifier);
+        sendMessage(new_socket, buffer, strlen(buffer) + 1);
+
+        sprintf(buffer, "%s", message);
+        sendMessage(new_socket, buffer, strlen(buffer) + 1);
+
+        if (sendAck(aliasSender, identifier)==-1){
+            disconnect_user(alias, IP);
+            close(new_socket);
+            return -2;
+        }
+
+        if (close(new_socket)==-1){
+            disconnect_user(alias, IP);
+            return -1;
+        }
+    }
+
+    return 0;
+
+}
+
+int sendRemainingMessages(int local_sd, char* alias, int nonSent, int lastSent, char* IP){
+
+    int i;
+    for (i=1;i<=nonSent;i++){
+        int identifier = lastSent + i;
+        char* aliasSender = (char*) malloc(MAX_CHAR*sizeof(char));
+        if (deliver_Message(alias, aliasSender, identifier)==-1 || deliver_Message(alias, aliasSender, identifier)==-2){
+            return -1;
+        }
+    }
+
+    return 0;
+
+}
+
+int sendListUsers(int local_sd, int connections, char** users){
+
+    char buffer[MAX_LINE];
+
+    sprintf(buffer, "%i", connections);
+    sendMessage(local_sd, buffer, strlen(buffer) + 1);
+
+    int i;
+    for (i=0; i<(connections); i++){
+        sprintf(buffer, "%s", users[i]);
+        sendMessage(local_sd, buffer, strlen(buffer) + 1);
+    }
+
+    return 0;
+
+}
+
+
+// void *tratar_peticion(struct thread_params client) {
+void *tratar_peticion(void* args) {
+    struct thread_params client = *((struct thread_params*) args);
+    char buffer[MAX_LINE];
+
+    // Get ip
+    struct in_addr ipAddr = client.client.sin_addr;
+    char ip_client[INET_ADDRSTRLEN];
+    inet_ntop( AF_INET, &ipAddr, ip_client, INET_ADDRSTRLEN );
+
+    // Get port
+    // size_t port_client = (int) ntohs(client.client.sin_port);
 
     // copy sd
 	pthread_mutex_lock(&mutex_sd);
 
-    int local_sd = *sd;  // copy sd
+    int local_sd = client.sd;  // copy sd
 
     copiado = true;  // update conditional variable
 	pthread_cond_signal(&c_sd);  // awake main
 	pthread_mutex_unlock(&mutex_sd);
 
-
+    char* opcode = (char*) malloc(sizeof(char)*MAX_CHAR);
     // read opcode
-    readLine(local_sd, buffer, MAX_LINE);
-    pet.opcode = atoi(buffer);
+    readLine(local_sd, &(opcode), MAX_LINE);
+
+
+    int result;
+    char* alias = (char*) malloc(MAX_CHAR*sizeof(char));
 
     // treat petition
-    struct Respuesta res;
+    if (strcmp("REGISTER", opcode)==0){
+
+        if (registerUserServer(local_sd, alias)==2){
+            Log("Error when registering the user\n")
+            printf("REGISTER %s FAIL\n", alias);
+            result = 2;
+            
+        } else if (registerUserServer(local_sd, alias)==0){
+            printf("REGISTER %s OK\n", alias);
+            result = 0;
+        } else if (registerUserServer(local_sd, alias)==1){
+            printf("REGISTER %s FAIL\n", alias);
+            result = 1;
+        }
+
+        sprintf(buffer, "%i", result);
+        sendMessage(local_sd, buffer, strlen(buffer) + 1);
+
+    } else if (strcmp("UNREGISTER", opcode)==0){
+
+        if (unregisterUserServer(local_sd, alias)==2){
+            Log("Error when unregistering the user\n")
+            printf("UNREGISTER %s FAIL\n", alias);
+            result=2;
+        } else if (unregisterUserServer(local_sd,alias)==1){
+            printf("UNREGISTER %s FAIL\n", alias);
+            result=1;
+        } else if (unregisterUserServer(local_sd, alias)==0){
+            printf("UNREGISTER %s OK\n", alias);
+            result=0;
+        }
+
+        sprintf(buffer, "%i", result);
+        sendMessage(local_sd, buffer, strlen(buffer) + 1);
+
+    } else if (strcmp("CONNECT", opcode)==0){
+
+        int nonSent;
+        int lastSent;
+
+        if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client)==3){
+            Log("Error when connecting the user\n")
+            printf("CONNECT %s FAIL\n", alias);
+            result=3;
+        } else if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client)==1){
+            printf("CONNECT %s FAIL\n", alias);
+            result=1;
+        } else if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client) == 2){
+            printf("CONNECT %s FAIL\n", alias);
+            result=2;
+
+        } else  if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client)==0){
+            printf("CONNECT %s OK\n", alias);
+            result=0;
+        }
+
+        sprintf(buffer, "%i", result);
+        sendMessage(local_sd, buffer, strlen(buffer) + 1);
+
+        if (result == 0){
+            sendRemainingMessages(local_sd, alias, nonSent, lastSent, ip_client);
+        }
+
+        
+
+    } else if (strcmp("DISCONNECT", opcode)==0){
+
+        if (disconnectUserServer(local_sd, alias, ip_client)==3){
+            Log("Error when disconnecting the user\n")
+            printf("DISCONNECT %s FAIL\n", alias);
+            result=3;
+        } else if (disconnectUserServer(local_sd, alias, ip_client)==1){
+            printf("DISCONNECT %s FAIL\n", alias);
+            result=1;
+        } else if (disconnectUserServer(local_sd, alias,ip_client) == 2){
+            printf("DISCONNECT %s FAIL\n", alias);
+            result=2;
+
+        } else  if (disconnectUserServer(local_sd, alias, ip_client)==0){
+            printf("DISCONNECT %s OK\n", alias);
+            result=0;
+        } 
+
+        sprintf(buffer, "%i", result);
+        sendMessage(local_sd, buffer, strlen(buffer) + 1); 
     
+    } else if (strcmp("SEND", opcode)==0){
+        char* alias2 = (char*) malloc(MAX_CHAR * sizeof(char));
+        int identifier;
+        if (sendMessageStoreServer(local_sd, alias, alias2, &identifier)==2){
+            Log("Error when storing the message the user\n")
+            printf("SEND MESSAGE FROM %s to %s FAIL\n", alias, alias2);
+            result = 2;
+        }else if (sendMessageStoreServer(local_sd, alias, alias2, &identifier)==1){
+            printf("SEND MESSAGE FROM %s to %s FAIL\n", alias, alias2);
+            result=1;
+        }else if (sendMessageStoreServer(local_sd, alias, alias2, &identifier)==0){
+            result=0;
+        }
 
-    switch (pet.opcode) {
-        case 0:  // init
-            Log("Client %i: Received init\n", local_sd);
+        if (result == 0){
+            if (deliver_Message(alias2, alias,identifier)==-1){
+                printf("SEND MESSAGE %d FROM %s to %s STORED\n", identifier, alias, alias2);
+            }else{
+                printf("SEND MESSAGE %d FROM %s to %s\n", identifier, alias, alias2);
+                confirm_received(alias2, identifier);
+            }
+            sprintf(buffer, "%i", identifier);
+            sendMessage(local_sd, buffer, strlen(buffer) + 1);
+        }else{
+            sprintf(buffer, "%i", result);
+            sendMessage(local_sd, buffer, strlen(buffer) + 1);
+        }
 
-            // execute
-            res.result = init();
-
-            // answer
-            sprintf(buffer, "%i", res.result);
+    } else if (strcmp("CONNECTEDUSERS", opcode)==0){
+        int connections;
+        char** users;
+        if (seeNumberConnected(&connections)!=-1){
+            users = (char**) malloc(sizeof(char*) * connections);
+            int i;
+            for (i=0;i< connections;i++){
+                users[i] = (char*)malloc(sizeof(char)*MAX_CHAR);
+            }
+            if (connectedUsersServer(local_sd, &connections, users, ip_client)==2){
+                Log("Error when retrieving list of connected users\n")
+                printf("CONNECTEDUSERS FAIL\n");
+                result=2;
+            } else if (connectedUsersServer(local_sd, &connections, users, ip_client)==1){
+                printf("CONNECTEDUSERS FAIL\n");
+                result = 1;
+            } else if (connectedUsersServer(local_sd, &connections, users, ip_client)==0){
+                printf("CONNECTEDUSERS OK\n");
+                result = 0;
+            }
+            sprintf(buffer, "%i", result);
             sendMessage(local_sd, buffer, strlen(buffer) + 1);
 
-            // pthread_mutex_lock(&mutex_stdout);
-            // printf("Sent: {result: %s}\n", buffer);
-            // pthread_mutex_unlock(&mutex_stdout);
-            
-            break;
-
-        case 1:  // set
-            // get arguments
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.clave = atoi(buffer);
-
-            readLine(local_sd, &(pet.value.value1), MAX_LINE);
-
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.value2 = atoi(buffer);
-            Log("Clave %i | Value 1 %s | Value 2 %i \n", pet.value.clave, pet.value.value1, pet.value.value2);
-
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.value3 = atof(buffer);
-
-            Log("Client %i: Received {opcode: %i (set), key: %i, value1: %s, value2: %i, value3: %f}\n", local_sd, pet.opcode, pet.value.clave, pet.value.value1, pet.value.value2, pet.value.value3);
-            // execute
-            res.result = set(pet.value.clave, pet.value.value1, pet.value.value2, pet.value.value3);
-
-            // answer
-            sprintf(buffer, "%i", res.result);
+            if (result ==0){
+                sendListUsers(local_sd, connections, users);
+            }
+        }else{
+            printf("CONNECTEDUSERS FAIL\n");
+            result=2;
+            sprintf(buffer, "%i", result);
             sendMessage(local_sd, buffer, strlen(buffer) + 1);
-            
-            break;
+        }
 
-        case 2:  // get
-            
-            // get arguments
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.clave = atoi(buffer);
-
-            Log("Client %i: Received {opcode: %i (get), key: %i}\n", local_sd, pet.opcode, pet.value.clave);
-
-            // execute
-            res.result = get(pet.value.clave, res.value.value1, &(res.value.value2), &(res.value.value3));
-
-            // answer
-            sprintf(buffer, "%i", res.result);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
-
-            sendMessage(local_sd, res.value.value1, strlen(res.value.value1) + 1);
-
-            sprintf(buffer, "%i", res.value.value2);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
-            
-            sprintf(buffer, "%f", res.value.value3);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
-
-            break;
-        
-        case 3:  // modify
-            // get arguments
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.clave = atoi(buffer);
-
-            readLine(local_sd, &(pet.value.value1), MAX_LINE);
-
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.value2 = atoi(buffer);
-
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.value3 = atof(buffer);
-
-            Log("Modify\n");
-
-            Log("Client %i: Received {opcode: %i (modify), key: %i, value1: %s, value2: %i, value3: %f}\n", local_sd, pet.opcode, pet.value.clave, pet.value.value1, pet.value.value2, pet.value.value3);
-
-            // execute
-            res.result = modify(pet.value.clave, pet.value.value1, pet.value.value2, pet.value.value3);
-
-            // answer
-            sprintf(buffer, "%i", res.result);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
-
-            break;
-        
-        case 4:  // exist
-            // get arguments
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.clave = atoi(buffer);
-
-            Log("Client %i: Received {opcode: %i (exist), key: %i}\n", local_sd, pet.opcode, pet.value.clave);
-
-            // execute
-            res.result = exist(pet.value.clave);
-
-            // answer
-            sprintf(buffer, "%i", res.result);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
-
-            break;
-
-        case 5:  // copyKey
-
-            // get arguments
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.clave = atoi(buffer);
-            
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.alt_key = atoi(buffer);
-
-            Log("Client %i: Received {opcode: %i (copy_key), key: %i, alt_key: %i}\n", local_sd, pet.opcode, pet.value.clave, pet.alt_key);
-
-            // execute
-            res.result = copy_key(pet.value.clave, pet.alt_key);
-
-            // answer
-            sprintf(buffer, "%i", res.result);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
-
-            break;
-
-        case 6: //deleteKey
-            // get arguments
-            readLine(local_sd, buffer, MAX_LINE);
-            pet.value.clave = atoi(buffer);
-
-            Log("Client %i: Received {opcode: %i (delete_key), key: %i}\n", local_sd, pet.opcode, pet.value.clave);
-
-            // execute
-            res.result = delete_key(pet.value.clave);
-
-            // answer
-            sprintf(buffer, "%i", res.result);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
-            break;
-
-        default:
-            res.result = -1;
-            Log("Undefined operation code\n");
-
-            // answer
-            sprintf(buffer, "%i", res.result);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
-
-            break;
+    }else{
+        Log("Not a valid operation code\n");
     }
-
-    // print_list();
     
     close(local_sd);
 
@@ -299,10 +546,14 @@ int main(int argc, char* argv[]) {
             perror("Error in accept\n");
             return -1;
         }
-        // printf("Client %i connected\n", newsd);
+
+        struct thread_params params;
+
+        params.sd = newsd;
+        params.client = client_addr;
 
         // create thread
-        if (pthread_create(&thid, &t_attr, (void*) tratar_peticion, (void*) &newsd) == 0) {  // wait to copy petition
+        if (pthread_create(&thid, &t_attr, (void*) tratar_peticion, (void*) &params) == 0) {  // wait to copy petition
             // mutex logic
             pthread_mutex_lock(&mutex_sd);
 
@@ -337,4 +588,3 @@ int main(int argc, char* argv[]) {
 
 	exit(0);
 }
-

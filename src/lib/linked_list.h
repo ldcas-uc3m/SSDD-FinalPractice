@@ -34,8 +34,8 @@ typedef struct Node* List;
 
 int initList(List* l);
 int connectUser(List* l, char* alias, char* IP, int port, int* nonSent, int* lastSent);
-int disconnectUser(List* l, char* username);
-int registerUser(List* l, char* username, char* alias, char* datetime, char* IP, int port);
+int disconnectUser(List* l, char* username, char* IP);
+int registerUser(List* l, char* username, char* alias, char* datetime);
 int unregisterUser(List* l, char* username);
 int sendMessageStore(List* l, char* aliasSender, char* aliasRecieved, char* message, int* identifier);
 int sendMessageDeliver(List* l, char* aliasSender, char* aliasReceived, char* message, int identifier, char* IP, int* port);
@@ -43,6 +43,8 @@ int listConnected(List* l, char** users);
 int numberConnected(List* l, int* connections);
 int confirmReceived(List *l, char* aliasReceiver, int identifier);
 int destroyList(List *l);
-int isConnected(List *l, char* username);
+int isConnected(List *l, char* IP);
+int isConnectedUsername(List *l, char* IP);
+int ipPortInfo(List *l, char* aliasSender, char* IP, int* port);
 
 #endif

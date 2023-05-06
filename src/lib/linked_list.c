@@ -205,7 +205,7 @@ int connectUser(List* l, char* alias, char* IP, int port, int* nonSent, int* las
             }else{
                 Log("User already connected\n");
                 pthread_mutex_unlock(&mutex_list);
-                return -1;
+                return 2;
             }
         }
         else {  // next element
@@ -216,12 +216,13 @@ int connectUser(List* l, char* alias, char* IP, int port, int* nonSent, int* las
 
     Log("Element not found\n");
 
-    return -1;  // not found
+    return 1;  // not found
 }
 
-int disconnectUser(List* l, char* alias){
-            /*
-    Connects the user with a specific alias
+int disconnectUser(List* l, char* alias, char* IP){
+    
+    /*
+    Disconnects the user with a specific alias
     */
     
     // traverse the list
@@ -231,18 +232,21 @@ int disconnectUser(List* l, char* alias){
     while (aux != NULL) {
         if (aux->alias == alias) {  // found
             if (aux->connected == true){
-                aux->connected = false;
-                strcpy(aux->IP, "None");
-                aux->port = -1;
-                pthread_mutex_unlock(&mutex_list);
-                return 0;
+                if (strcmp(IP, aux->IP)==0){
+                    aux->connected = false;
+                    strcpy(aux->IP, "None");
+                    aux->port = -1;
+                    pthread_mutex_unlock(&mutex_list);
+                    return 0;
+                }else{
+                    return 3;
+                }
             }else{
                 Log("User already disconnected\n");
                 pthread_mutex_unlock(&mutex_list);
-                return -1;
+                return 2;
             }
-        }
-        else {  // next element
+        }else {  // next element
             aux = aux->next;
         }
     }
@@ -250,10 +254,10 @@ int disconnectUser(List* l, char* alias){
 
     Log("Element not found\n");
 
-    return -1;  // not found
+    return 1;  // not found
 }
 
-int registerUser(List* l, char* username, char* alias, char* datetime, char* IP, int port){
+int registerUser(List* l, char* username, char* alias, char* datetime){
     pthread_mutex_lock(&mutex_list);    
     List aux = *l;  // head
     while (aux != NULL) {
@@ -262,7 +266,7 @@ int registerUser(List* l, char* username, char* alias, char* datetime, char* IP,
             Log("Username already inserted\n");
 
             pthread_mutex_unlock(&mutex_list);
-            return -1;
+            return 1;
         }
         else {  // next element
             aux = aux->next;
@@ -280,7 +284,7 @@ int registerUser(List* l, char* username, char* alias, char* datetime, char* IP,
     if (ptr == NULL) {
         Log("malloc() fail\n");
 
-        return -1;
+        return 2;
     }
 
     // allocate memory for value1
@@ -290,7 +294,7 @@ int registerUser(List* l, char* username, char* alias, char* datetime, char* IP,
 
         Log("malloc() fail\n");
 
-        return -1;
+        return 2;
     }
     ptr->alias = (char*) malloc(MAX_CHAR);  // new string
     if (ptr->alias == NULL) {  // failed allocation
@@ -298,7 +302,7 @@ int registerUser(List* l, char* username, char* alias, char* datetime, char* IP,
 
         Log("malloc() fail\n");
 
-        return -1;
+        return 2;
     }
     ptr->IP= (char*) malloc(MAX_CHAR);  // new string
     if (ptr->IP == NULL) {  // failed allocation
@@ -306,7 +310,7 @@ int registerUser(List* l, char* username, char* alias, char* datetime, char* IP,
 
         Log("malloc() fail\n");
 
-        return -1;
+        return 2;
     }
 
     // form node
@@ -334,7 +338,7 @@ int registerUser(List* l, char* username, char* alias, char* datetime, char* IP,
     return 0;
 }
 
-int unregisterUser(List* l, char* username){
+int unregisterUser(List* l, char* alias){
      /*
     Elimina un par de la lista l, identificado por su username.
     */
@@ -345,10 +349,10 @@ int unregisterUser(List* l, char* username){
     List aux, back;
     if (*l == NULL) { // lista vacia
         pthread_mutex_unlock(&mutex_list);
-        return -1;
+        return 1;
     }
 
-    if (strcmp(username,(*l)->username) == 0) {
+    if (strcmp(alias,(*l)->alias) == 0) {
         aux = *l;
         *l = (*l)->next;
         free(aux->username);
@@ -367,7 +371,7 @@ int unregisterUser(List* l, char* username){
 
     // resto de elementos
     while (aux != NULL) {
-        if (aux->username == username) {  // found
+        if (aux->username == alias) {  // found
             back->next = aux->next;
             free(aux->username);
             free(aux->alias);
@@ -386,8 +390,8 @@ int unregisterUser(List* l, char* username){
     }
     pthread_mutex_unlock(&mutex_list);
 
-    Log("Element not found\n");
-    return -1;  // not found
+    Log("User not found\n");
+    return 1;  // not found
 }
 
 int sendMessageStore(List* l, char* aliasSender, char* aliasRecieved, char* message, int* identifier){
@@ -430,6 +434,30 @@ int sendMessageStore(List* l, char* aliasSender, char* aliasRecieved, char* mess
     }
     pthread_mutex_unlock(&mutex_list);
     return 0;
+}
+
+int ipPortInfo(List* l, char* aliasSender, char* IP, int* port){
+        /*
+    Connects the user with a specific alias
+    */
+    
+    // traverse the list
+    pthread_mutex_lock(&mutex_list);
+    
+    List aux = *l;  // head
+    while (aux != NULL) {
+        if (aux->alias == aliasSender) {  // found
+            strcpy(IP, aux->IP);
+            *port = aux->port;
+        }else {  // next element
+            aux = aux->next;
+        }
+    }
+    pthread_mutex_unlock(&mutex_list);
+
+    Log("Element not found\n");
+
+    return 1;  // not found
 }
 
 int sendMessageDeliver(List* l, char* aliasSender, char* aliasReceived, char* message, int identifier, char* IP, int* port){
@@ -511,11 +539,35 @@ int listConnected(List* l, char** users){
     return 0;
 }
 
-int isConnected(List *l, char* username){
+int isConnected(List *l, char* IP){
     pthread_mutex_lock(&mutex_list);    
     List aux = *l;  // head
     while (aux != NULL) {
-        if (aux->username == username) {  // key is already inserted
+        if (strcmp(aux->IP,IP)==0) {
+            
+            if (aux->connected==true){
+                pthread_mutex_unlock(&mutex_list);
+                return 1;
+            }else{
+                pthread_mutex_unlock(&mutex_list);
+                return 0;
+            }
+        }
+        else {  // next element
+            aux = aux->next;
+        }
+    }
+
+    Log("User not found\n");
+    pthread_mutex_unlock(&mutex_list);
+    return -1;
+}
+
+int isConnectedUsername(List *l, char* alias){
+    pthread_mutex_lock(&mutex_list);    
+    List aux = *l;  // head
+    while (aux != NULL) {
+        if (strcmp(aux->alias,alias)==0) {
             
             if (aux->connected==true){
                 pthread_mutex_unlock(&mutex_list);

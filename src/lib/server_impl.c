@@ -13,7 +13,6 @@ Server implementation for tuples
 #include "comm.h"
 #include "../log.h"
 
-
 List list = NULL;
 
 
@@ -36,19 +35,25 @@ int connect_user(char* alias, char* IP, int port, int* nonSent, int* lastSent){
     return connectUser(&list, alias, IP, port, nonSent, lastSent);
 }
 
-int disconnect_user(char* username){
+int getIPPort(char* aliasSender, char* IP, int* port){
 
-    return disconnectUser(&list, username);
+    return ipPortInfo(&list, aliasSender, IP, port);
 }
 
-int register_user(char* username, char* alias, char* datetime, char* IP, int port){
 
-    return registerUser(&list, username, alias, datetime, IP, port);
+int disconnect_user(char* username, char* IP){
+
+    return disconnectUser(&list, username, IP);
 }
 
-int unregister_user(char* username){
+int register_user(char* username, char* alias, char* datetime){
 
-    return unregisterUser(&list, username);
+    return registerUser(&list, username, alias, datetime);
+}
+
+int unregister_user(char* alias){
+
+    return unregisterUser(&list, alias);
 }
 
 int sendMessage_store(char* aliasSender, char* aliasReceived, char* message, int* identifier){
@@ -66,23 +71,24 @@ int confirm_received(char* receiver, int identifier){
     return confirmReceived(&list, receiver, identifier);
 }
 
-int userConnected(char* username){
+int userConnected(char* IP){
 
-    return isConnected(&list, username);
+    return isConnected(&list, IP);
 }
 
-int connectedUsers(int* connections, char** users) {
-    if (numberConnected(&list, connections)!=-1){
-        users = (char**) malloc(sizeof(char*) * *connections);
-        int i;
-        for (i=0;i++;i< *connections){
-            users[i] = (char*)malloc(sizeof(char)*MAX_CHAR);
-        }
-        if (listConnected(&list, users)==-1){
-            Log("Error when retrieving list of connected users\n");
-            return -1;
-        }
-    }else{
+int userConnectedUsername(char* username){
+
+    return isConnectedUsername(&list, username);
+}
+
+int seeNumberConnected(int* connections){
+    
+    return numberConnected(&list, connections);
+}
+
+int connectedUsers(char** users) {
+    if (listConnected(&list, users)==-1){
+        Log("Error when retrieving list of connected users\n");
         return -1;
     }
     return 0;
