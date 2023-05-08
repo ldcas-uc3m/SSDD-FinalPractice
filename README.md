@@ -242,7 +242,10 @@ s> CONNECT FAIL
 ```
 
 ### 6.4 Desconectarse del sistema
-El botón `DISCONNECT` permitirá al usuario desconectarse al servidor. Mensajes de salida Cuando un usuario se desconecta del servicio se mostrará en el cuadro de texto asociado al cliente:
+El botón `DISCONNECT` permitirá al usuario desconectarse al servidor. 
+
+### Mensajes de salida
+Cuando un usuario se desconecta del servicio se mostrará en el cuadro de texto asociado al cliente:
 ```
 c> DISCONNECT <userName>
 ```
@@ -595,7 +598,7 @@ Cuando el servidor quiere enviarle a un usuario registrado y conectado un mensaj
 2. Se envía la cadena `SEND MESSAGE` indicando la operación.
 3. Se envía una cadena con el nombre que identifica al usuario (alias) que envía el mensaje.
 4. Se envía una cadena codificando en ella el identificador asociado al mensaje.
-5. Se envía una cadena con el mensaje (todos los mensajes tendrán como mucho 256 bytes incluido el código `0`, este tamaño lo controlará el cliente).
+5. Se envía una cadena con el mensaje (todos los mensajes tendrán como mucho 256 bytes incluido el código `\0`, este tamaño lo controlará el cliente).
 6. Cierra la conexión.
 
 Si se produce algún error durante esta operación, el mensaje se considerará no entregado y se seguirá almacenando en el servidor como pendiente de entrega, hasta que se pueda entregar. Si se produce algún error durante la conexión a un cliente, el servidor asumirá que el cliente se ha desconectado y lo marcará como desconectado.

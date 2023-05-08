@@ -31,6 +31,7 @@ class client:
     _alias = None
     _date = None
     conversation_sd = None
+    conversation_thread = None
     id = 0
 
 
@@ -59,16 +60,31 @@ class client:
 
     # ******************** METHODS *******************
     # *
-    # * @brief 
+    # * @brief Receiving messages from the server
     # *
-    # * @return 
+    # * @param sd       - client socket
+    # * @param window   - client window
     def conversation(sd: socket.socket, window: sg.Window):
-        while True:
-            client.conversation_sd = sd.accept()[0]
+        sd.listen(True)
 
+        while True:
+            try:
+                sd.accept()
+            except:
+                exit()
+
+            # read message
+            if readString(sd) != "SEND MESSAGE":
+                continue
+            
+            alias = readString(sd)
+            id = readString(sd)
             msg = readString(sd)
-            # TODO: show messages
-            pass
+
+            window['_CLIENT_'].print("c> MESSAGE " + id + " FROM " + alias)
+            window['_CLIENT_'].print("\t" + msg)
+            window['_CLIENT_'].print("\tEND")
+
 
 
     # *
@@ -164,15 +180,19 @@ class client:
     # * @return ERROR if another error occurred
     @staticmethod
     def connect(alias, window: sg.Window):
-        
+
+        if client.conversation_sd != None:
+            window['_CLIENT_'].print("c> CONNECT FAIL")
+            return
+
         # create new socket on free port
-        new_sd = socket.socket()
-        new_sd.bind(('', 0))  # by using 0 the system gives a random free port
-        port = new_sd.getsockname()[1]
+        client.conversation_sd = socket.socket()
+        client.conversation_sd.bind(('', 0))  # by using 0 the system gives a random free port
+        port = client.conversation_sd.getsockname()[1]
 
         # create thread
-        threading.Thread(target=client.conversation, args=(new_sd, window))
-
+        client.conversation_thread = threading.Thread(target=client.conversation, args=(client.conversation_sd, window))
+        client.conversation_thread.start()
 
         # send message
         try:
@@ -190,7 +210,7 @@ class client:
 
             match readString(sd):
                 case client.RC.OK:
-                    window['_SERVER_'].print("s> CONNECT OK")
+                    window['_SERVER_'].print("s> DISCONNECT OK")
                 
                 case client.RC.USER_ERROR:
                     window['_SERVER_'].print("s> CONNECT FAIL, USER DOES NOT EXIST")
@@ -222,12 +242,58 @@ class client:
     # * @return ERROR if another error occurred
     @staticmethod
     def disconnect(alias, window: sg.Window):
-        window['_SERVER_'].print("s> DISCONNECT OK")
-        #  Write your code here
 
+        if client.conversation_sd == None:
+            window['_CLIENT_'].print("c> DISCONNECT FAIL")
+            return
+
+        # close socket
         # close socket (client.conversation_sd) -> raises exception -> catch it
+        try:
+            client.conversation_sd.close()
+            client.conversation_thread.join()
+        except:  # FIXME: catch exception???
+            pass
 
-        return client.RC.ERROR
+        client.conversation_sd = None
+
+
+        # send message
+        try:
+            sd = client.socket_connect()
+        except:
+            window['_SERVER_'].print("s> DISCONNECT FAIL")
+            return
+        try:
+            sendString("DISCONNECT")
+            sendString(alias)
+
+            # wait for result
+
+            match readString(sd):
+                case client.RC.OK:
+                    window['_SERVER_'].print("s> CONNECT OK")
+                
+                case client.RC.USER_ERROR:
+                    window['_SERVER_'].print("s> DISCONNECT FAIL / USER DOES NOT EXIST")
+                
+                case client.RC.CONNECTED_ERROR:
+                    window['_SERVER_'].print("s> DISCONNECT FAIL / USER NOT CONNECTED")
+                    
+                case client.RC.OTHER_ERROR:
+                    window['_SERVER_'].print("s> DISCONNECT FAIL")
+                
+                case _:
+                    window['_SERVER_'].print("s> DISCONNECT FAIL")
+                    sd.close()
+            
+            sd.close()
+
+        except:
+            sd.close()
+            window['_SERVER_'].print("s> DISCONNECT FAIL")
+
+
 
     # *
     # * @param user    - Receiver user name
@@ -257,7 +323,6 @@ class client:
                     window['_SERVER_'].print("s> SEND OK - MESSAGE " + client.id)
                     try:
                         id = int(readString(sd))
-                        window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
                     except:
                         pass
                 
@@ -270,13 +335,19 @@ class client:
                 case _:
                     window['_SERVER_'].print("s> SEND FAIL")
             
+            # wait for ack
+            try:
+                if readString(sd) == "SEND MESS ACK":
+                    window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
+            except:
+                pass
 
             sd.close()
             client.id += 1
 
         except:
             sd.close()
-            window['_SERVER_'].print("s> REGISTER FAIL")
+            window['_SERVER_'].print("s> SEND FAIL")
         
 
     # *
@@ -292,13 +363,58 @@ class client:
     def sendAttach(user, message, file, window: sg.Window):
         window['_SERVER_'].print("s> SENDATTACH MESSAGE OK")
         print("SEND ATTACH " + user + " " + message + " " + file)
+
+        # TODO (?): Send Attach
+
         #  Write your code here
         return client.RC.ERROR
 
     @staticmethod
     def connectedUsers(window):
-        window['_SERVER_'].print("s> CONNECTED USERS OK")
-        #  Write your code here
+
+        try:
+            sd = client.socket_connect()
+        except:
+            window['_SERVER_'].print("s> CONNECTED USERS FAIL")
+            return
+        try:
+            sendString("CONNECTEDUSERS")
+
+            # wait for result
+
+            match readString(sd):
+                case client.RC.OK:
+                    
+                    # read users
+
+                    msg = "s> CONNECTED USERS "
+                    
+                    num_users = readString(sd)
+                    msg += sd + " OK - "
+
+                    for i in range(num_users):
+                        if i == num_users - 1:  # last user
+                            msg += readString(sd)
+                        else:
+                            msg += readString(sd) + ", "
+
+                    window['_SERVER_'].print(msg)
+                
+                case client.RC.USER_ERROR:
+                    window['_SERVER_'].print("s> CONNECTED USERS FAIL / USER IS NOT CONNECTED")
+                
+                case client.RC.ERROR:
+                    window['_SERVER_'].print("s> CONNECTED USERS FAIL")
+                
+                case _:
+                    window['_SERVER_'].print("s> CONNECTED USERS FAIL")
+
+            sd.close()
+
+        except:
+            sd.close()
+            window['_SERVER_'].print("s> CONNECTED USERS FAIL")
+
         return client.RC.ERROR
 
 
