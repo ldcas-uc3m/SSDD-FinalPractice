@@ -19,7 +19,6 @@ def readString(sd: socket.socket):
     
     msg = ''
 
-    i = 0
     for _ in range(MAX_LINE):
         char = sd.recv(1)
         if (char == b'\0'):

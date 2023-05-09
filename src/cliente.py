@@ -46,14 +46,14 @@ class client:
         sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # get server address
-        server = (client._username, client._port)
+        server = (client._server, client._port)
 
         # establish connection
         try:
             sd.connect(server)
-        except ConnectionRefusedError:
+        except Exception as e:
             print("Error en la conexión")
-            return
+            raise e
 
         return sd
     
@@ -69,17 +69,17 @@ class client:
 
         while True:
             try:
-                sd.accept()
+                client.conversation_sd = sd.accept()[0]
             except:
                 exit()
 
             # read message
-            if readString(sd) != "SEND MESSAGE":
+            if readString(client.conversation_sd) != "SEND MESSAGE":
                 continue
             
-            alias = readString(sd)
-            id = readString(sd)
-            msg = readString(sd)
+            alias = readString(client.conversation_sd)
+            id = readString(client.conversation_sd)
+            msg = readString(client.conversation_sd)
 
             window['_CLIENT_'].print("c> MESSAGE " + id + " FROM " + alias)
             window['_CLIENT_'].print("\t" + msg)
@@ -104,10 +104,10 @@ class client:
             window['_SERVER_'].print("s> REGISTER FAIL")
             return
         try:
-            sendString("REGISTER")
-            sendString(user)
-            sendString(alias)
-            sendString(date)
+            sendString("REGISTER", sd)
+            sendString(user, sd)
+            sendString(alias, sd)
+            sendString(date, sd)
 
             # wait for result
 
@@ -147,8 +147,8 @@ class client:
             window['_SERVER_'].print("s> UNREGISTER FAIL")
             return
         try:
-            sendString("UNREGISTER")
-            sendString(alias)
+            sendString("UNREGISTER", sd)
+            sendString(alias, sd)
 
             # wait for result
 
@@ -202,9 +202,9 @@ class client:
             return
 
         try:
-            sendString("CONNECT")
-            sendString(alias)
-            sendString(port)
+            sendString("CONNECT", sd)
+            sendString(alias, sd)
+            sendString(port, sd)
 
             # wait for result
 
@@ -265,8 +265,8 @@ class client:
             window['_SERVER_'].print("s> DISCONNECT FAIL")
             return
         try:
-            sendString("DISCONNECT")
-            sendString(alias)
+            sendString("DISCONNECT", sd)
+            sendString(alias, sd)
 
             # wait for result
 
@@ -311,10 +311,10 @@ class client:
             window['_SERVER_'].print("s> SEND FAIL")
             return
         try:
-            sendString("SEND")
-            sendString(alias_src)
-            sendString(alias_dst)
-            sendString(message)
+            sendString("SEND", sd)
+            sendString(alias_src, sd)
+            sendString(alias_dst, sd)
+            sendString(message, sd)
 
             # wait for result
 
@@ -378,7 +378,7 @@ class client:
             window['_SERVER_'].print("s> CONNECTED USERS FAIL")
             return
         try:
-            sendString("CONNECTEDUSERS")
+            sendString("CONNECTEDUSERS", sd)
 
             # wait for result
 
