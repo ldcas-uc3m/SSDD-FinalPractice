@@ -8,6 +8,8 @@ import sys
 sys.path.append('..')
 from lib.lines import *
 
+# controls the lenght (in number of messages) of the expected answer
+ANSWER_LEN = 1  
 
 
 def main():
@@ -37,11 +39,12 @@ def main():
             msg = input()
             sendString(msg, sd)
 
-            if msg == "EXIT":
-                break
-
-            res = readString(sd)
-            print("S>", res)
+            # if msg == "EXIT":
+            #     break
+            
+            for _ in range(ANSWER_LEN):
+                print("S>", readString(sd))
+                
         except:
             break
     
