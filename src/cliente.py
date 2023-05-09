@@ -1,7 +1,6 @@
 import subprocess
 import sys
 import PySimpleGUI as sg
-from enum import Enum
 import argparse
 import socket
 import threading
@@ -10,18 +9,6 @@ from lib.lines import *
 
 
 class client:
-
-    # ******************** TYPES *********************
-    # *
-    # * @brief Return codes for the protocol methods
-    class RC(Enum) :
-        OK = 0
-        USER_ERROR = 1
-        ERROR = 2
-        # for connect()
-        CONNECTED_ERROR = 2
-        OTHER_ERROR = 3
-
 
     # ****************** ATTRIBUTES ******************
     _server = None
@@ -111,14 +98,16 @@ class client:
 
             # wait for result
 
-            match readString(sd):
-                case client.RC.OK:
+
+            match int(readString(sd)):
+                # yeah, it's FUCKING hardcoded, because FUCK enums and matches
+                case 0:
                     window['_SERVER_'].print("s> REGISTER OK")
                 
-                case client.RC.USER_ERROR:
+                case 1:
                     window['_SERVER_'].print("s> USERNAME IN USE")
                 
-                case client.RC.ERROR:
+                case 2:
                     window['_SERVER_'].print("s> REGISTER FAIL")
                 
                 case _:
@@ -152,14 +141,14 @@ class client:
 
             # wait for result
 
-            match readString(sd):
-                case client.RC.OK:
+            match int(readString(sd)):
+                case 0:
                     window['_SERVER_'].print("s> UNREGISTER OK")
                 
-                case client.RC.USER_ERROR:
+                case 1:
                     window['_SERVER_'].print("s> USER DOES NOT EXIST")
                 
-                case client.RC.ERROR:
+                case 2:
                     window['_SERVER_'].print("s> REGISTER FAIL")
                 
                 case _:
@@ -208,17 +197,17 @@ class client:
 
             # wait for result
 
-            match readString(sd):
-                case client.RC.OK:
+            match int(readString(sd)):
+                case 0:
                     window['_SERVER_'].print("s> DISCONNECT OK")
                 
-                case client.RC.USER_ERROR:
+                case 1:
                     window['_SERVER_'].print("s> CONNECT FAIL, USER DOES NOT EXIST")
                 
-                case client.RC.CONNECTED_ERROR:
+                case 2:
                     window['_SERVER_'].print("s> USER ALREADY CONNECTED")
                     
-                case client.RC.OTHER_ERROR:
+                case 3:
                     window['_SERVER_'].print("s> CONNECT FAIL")
                 
                 case _:
@@ -270,17 +259,17 @@ class client:
 
             # wait for result
 
-            match readString(sd):
-                case client.RC.OK:
+            match int(readString(sd)):
+                case 0:
                     window['_SERVER_'].print("s> CONNECT OK")
                 
-                case client.RC.USER_ERROR:
+                case 1:
                     window['_SERVER_'].print("s> DISCONNECT FAIL / USER DOES NOT EXIST")
                 
-                case client.RC.CONNECTED_ERROR:
+                case 2:
                     window['_SERVER_'].print("s> DISCONNECT FAIL / USER NOT CONNECTED")
                     
-                case client.RC.OTHER_ERROR:
+                case 3:
                     window['_SERVER_'].print("s> DISCONNECT FAIL")
                 
                 case _:
@@ -318,18 +307,18 @@ class client:
 
             # wait for result
 
-            match readString(sd):
-                case client.RC.OK:
+            match int(readString(sd)):
+                case 0:
                     window['_SERVER_'].print("s> SEND OK - MESSAGE " + client.id)
                     try:
                         id = int(readString(sd))
                     except:
                         pass
                 
-                case client.RC.USER_ERROR:
+                case 1:
                     window['_SERVER_'].print("s> SEND FAIL / USER DOES NOT EXIST")
                 
-                case client.RC.ERROR:
+                case 2:
                     window['_SERVER_'].print("s> SEND FAIL")
                 
                 case _:
@@ -367,7 +356,7 @@ class client:
         # TODO (?): Send Attach
 
         #  Write your code here
-        return client.RC.ERROR
+        return 2
 
     @staticmethod
     def connectedUsers(window):
@@ -382,8 +371,8 @@ class client:
 
             # wait for result
 
-            match readString(sd):
-                case client.RC.OK:
+            match int(readString(sd)):
+                case 0:
                     
                     # read users
 
@@ -400,10 +389,10 @@ class client:
 
                     window['_SERVER_'].print(msg)
                 
-                case client.RC.USER_ERROR:
+                case 1:
                     window['_SERVER_'].print("s> CONNECTED USERS FAIL / USER IS NOT CONNECTED")
                 
-                case client.RC.ERROR:
+                case 2:
                     window['_SERVER_'].print("s> CONNECTED USERS FAIL")
                 
                 case _:
@@ -415,7 +404,7 @@ class client:
             sd.close()
             window['_SERVER_'].print("s> CONNECTED USERS FAIL")
 
-        return client.RC.ERROR
+        return 2
 
 
     @staticmethod

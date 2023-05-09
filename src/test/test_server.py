@@ -9,6 +9,20 @@ sys.path.append('..')
 from lib.lines import *
 
 
+# ---
+# CONTROLS
+# ---
+
+# length of the request
+REQUEST_LEN = 4
+
+def answer(sd):
+    # answer to the request
+
+    sendString("0", sd)
+    print("S>", "0")
+
+
 
 def main():
     # arguments
@@ -31,17 +45,14 @@ def main():
         newsd, client_addr = sd.accept()
         print("Client connected")
 
-        while True:
+        # receive
+        for _ in range(REQUEST_LEN):
             msg = readString(newsd)
-            if msg ==  "EXIT": 
-                print("Client disconnected")
-                break
-            
             print("C>", msg)
 
-            # echo
-            # newsd.sendall(msg)
-        
+        # answer
+        answer(newsd)
+
         newsd.close()
 
 
