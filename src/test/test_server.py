@@ -210,10 +210,10 @@ def main():
     # main loop
 
     register(sd)
-    # connect(sd)
-    # send_good(sd)
-    # send_bad(sd)
-    # disconnect(sd)
+    connect(sd)
+    send_good(sd)
+    send_bad(sd)
+    disconnect(sd)
     connected_users(sd)
     # generic(sd)
 

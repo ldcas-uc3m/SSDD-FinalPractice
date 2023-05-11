@@ -238,11 +238,9 @@ class client:
             return
 
         # close socket
-        # TODO: close socket (client.conversation_sd) -> raises exception -> catch it
         try:
             client.conversation_sd.close()
-            # client.conversation_thread.join()
-        except Exception as e:  # FIXME: catch exception???
+        except Exception as e:
             print(e)
 
         client.conversation_sd = None

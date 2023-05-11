@@ -687,4 +687,16 @@ Por e.g.:
 $ python3 ./client.py -s localhost -p 8888
 ```
 
+### Tests del cliente
+
+El script [`test_server`](src/test/test_server.py) es una herramienta usada durante el desarrollo para probar el cliente.  
+Cuenta con funciones para simular una respuesta del servidor, las cuales son llamadas en el `main()`.
+
+Para ejecutarlo (importante hacerlo desde la carpeta [`test/`](src/test/), debido a los imports):
+```bash
+cd src/test
+python .\test_server.py <puerto>
+```
+
+
 ## Servidor
