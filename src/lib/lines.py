@@ -19,14 +19,15 @@ def readString(sd: socket.socket):
     
     msg = ''
 
-    for _ in range(MAX_LINE):
+    while True:
         char = sd.recv(1)
         if (char == b'\0'):
             return(msg)
 
         msg += char.decode()
 
-    raise ExceededMaximumLineException
+        if len(msg) >= MAX_LINE:
+            raise ExceededMaximumLineException
     
 
 

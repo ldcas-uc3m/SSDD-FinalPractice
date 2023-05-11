@@ -334,8 +334,8 @@ Como se verá posteriormente, siempre que el servidor envía con éxito un mensa
 Cada vez que el cliente reciba un mensaje a través del hilo creado para ello, deberá mostrar en el cuadro de texto izquierdo de la interfaz el siguiente mensaje:
 ```
 s> MESSAGE <id> FROM <userName>
-    <message>
-    END
+   <message>
+   END
 ```
 donde `<userName>` indica el alias del usuario.  
 

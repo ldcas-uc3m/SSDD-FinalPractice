@@ -64,13 +64,13 @@ class client:
             if readString(client.conversation_sd) != "SEND MESSAGE":
                 continue
             
-            alias = readString(client.conversation_sd)
-            id = readString(client.conversation_sd)
+            sender = readString(client.conversation_sd)
+            receiver = readString(client.conversation_sd)
             msg = readString(client.conversation_sd)
 
-            window['_CLIENT_'].print("c> MESSAGE " + id + " FROM " + alias)
-            window['_CLIENT_'].print("\t" + msg)
-            window['_CLIENT_'].print("\tEND")
+            window['_CLIENT_'].print("c> MESSAGE " + receiver + " FROM " + sender)
+            window['_CLIENT_'].print("   " + msg)
+            window['_CLIENT_'].print("   END")
 
 
 
@@ -193,13 +193,13 @@ class client:
         try:
             sendString("CONNECT", sd)
             sendString(alias, sd)
-            sendString(port, sd)
+            sendString(str(port), sd)
 
             # wait for result
 
             match int(readString(sd)):
                 case 0:
-                    window['_SERVER_'].print("s> DISCONNECT OK")
+                    window['_SERVER_'].print("s> CONNECT OK")
                 
                 case 1:
                     window['_SERVER_'].print("s> CONNECT FAIL, USER DOES NOT EXIST")
@@ -216,7 +216,8 @@ class client:
             
             sd.close()
 
-        except:
+        except Exception as e:
+            print(e)
             sd.close()
             window['_SERVER_'].print("s> CONNECT FAIL")
 
@@ -237,12 +238,12 @@ class client:
             return
 
         # close socket
-        # close socket (client.conversation_sd) -> raises exception -> catch it
+        # TODO: close socket (client.conversation_sd) -> raises exception -> catch it
         try:
             client.conversation_sd.close()
-            client.conversation_thread.join()
-        except:  # FIXME: catch exception???
-            pass
+            # client.conversation_thread.join()
+        except Exception as e:  # FIXME: catch exception???
+            print(e)
 
         client.conversation_sd = None
 
@@ -258,10 +259,9 @@ class client:
             sendString(alias, sd)
 
             # wait for result
-
             match int(readString(sd)):
                 case 0:
-                    window['_SERVER_'].print("s> CONNECT OK")
+                    window['_SERVER_'].print("s> DISCONNECT OK")
                 
                 case 1:
                     window['_SERVER_'].print("s> DISCONNECT FAIL / USER DOES NOT EXIST")
@@ -309,32 +309,39 @@ class client:
 
             match int(readString(sd)):
                 case 0:
-                    window['_SERVER_'].print("s> SEND OK - MESSAGE " + client.id)
-                    try:
-                        id = int(readString(sd))
-                    except:
-                        pass
-                
+                    # get message id
+                    id = readString(sd)
+                    window['_SERVER_'].print("s> SEND OK - MESSAGE " + id)
+
                 case 1:
                     window['_SERVER_'].print("s> SEND FAIL / USER DOES NOT EXIST")
+                    sd.close()
+                    return
                 
                 case 2:
                     window['_SERVER_'].print("s> SEND FAIL")
+                    
+                    sd.close()
+                    return
                 
                 case _:
                     window['_SERVER_'].print("s> SEND FAIL")
+                    sd.close()
+                    return
             
             # wait for ack
+            # TODO: what if no ack?
             try:
-                if readString(sd) == "SEND MESS ACK":
+                if readString(sd) == "SEND MESS ACK" and int(readString(sd)) == client.id:
                     window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
             except:
-                pass
-
+                window['_SERVER_'].print("s> SEND FAIL")
+                
             sd.close()
             client.id += 1
 
-        except:
+        except Exception as e:
+            print(e)
             sd.close()
             window['_SERVER_'].print("s> SEND FAIL")
         
@@ -350,13 +357,11 @@ class client:
     # * @return ERROR the user does not exist or another error occurred
     @staticmethod
     def sendAttach(user, message, file, window: sg.Window):
-        window['_SERVER_'].print("s> SENDATTACH MESSAGE OK")
-        print("SEND ATTACH " + user + " " + message + " " + file)
+        window['_SERVER_'].print("s> SENDATTACH MESSAGE FAIL")
+        # print("SEND ATTACH " + user + " " + message + " " + file)
 
         # TODO (?): Send Attach
 
-        #  Write your code here
-        return 2
 
     @staticmethod
     def connectedUsers(window):
@@ -378,8 +383,8 @@ class client:
 
                     msg = "s> CONNECTED USERS "
                     
-                    num_users = readString(sd)
-                    msg += sd + " OK - "
+                    num_users = int(readString(sd))
+                    msg += str(num_users) + " OK - "
 
                     for i in range(num_users):
                         if i == num_users - 1:  # last user
@@ -400,7 +405,8 @@ class client:
 
             sd.close()
 
-        except:
+        except Exception as e:
+            print(e)
             sd.close()
             window['_SERVER_'].print("s> CONNECTED USERS FAIL")
 
