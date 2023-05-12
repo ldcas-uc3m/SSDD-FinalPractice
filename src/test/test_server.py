@@ -12,19 +12,17 @@ from lib.lines import *
 client_addr = None
 
 def generic(sd):
-    newsd, client = sd.accept()
-    print("Client connected")
 
     # receive
     REQUEST_LEN = 2
     for _ in range(REQUEST_LEN):
-        msg = readString(newsd)
-        print("C>", msg)
+        msg = readString(sd)
+        print("c>", msg)
 
     # answer
     try:
-        sendString("0", newsd)
-        print("S>", "0")
+        sendString("0", sd)
+        print("s>", "0")
     except:
         print("Error de conexión")
 
@@ -32,41 +30,29 @@ def generic(sd):
 
 def register(sd):
 
-    newsd, client = sd.accept()
-    print("Client connected")
-
     # receive
-    REQUEST_LEN = 4
+    REQUEST_LEN = 3
     for _ in range(REQUEST_LEN):
-        msg = readString(newsd)
-        print("C>", msg)
+        msg = readString(sd)
+        print("c>", msg)
 
     # answer
     try:
-        sendString("0", newsd)
-        print("S>", "0")
+        sendString("0", sd)
+        print("s>", "0")
     except:
         print("Error de conexión")
 
 
 
-def connect(sd):
+def connect(sd, client):
     global client_addr
     
-    # accept connection
-    newsd, client = sd.accept()
-    print("Client connected")
-
     # receive
-    REQUEST_LEN = 1
-    for _ in range(REQUEST_LEN):
-        msg = readString(newsd)
-        print("C>", msg)
-
-    alias = readString(newsd)
-    print("C>", alias)
-    client_port = readString(newsd)
-    print("C>", client_port)
+    alias = readString(sd)
+    print("c>", alias)
+    client_port = readString(sd)
+    print("c>", client_port)
 
 
     client_sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -79,8 +65,8 @@ def connect(sd):
     
     # answer
     try:
-        sendString("0", newsd)
-        print("S>", "0")
+        sendString("0", sd)
+        print("s>", "0")
         
 
         time.sleep(1)
@@ -88,13 +74,13 @@ def connect(sd):
         # test receiving messages
 
         sendString("SEND MESSAGE", client_sd)
-        print("S>", "SEND MESSAGE")
+        print("s>", "SEND MESSAGE")
         sendString("pepe", client_sd)
-        print("S>", "pepe")
+        print("s>", "pepe")
         sendString(alias, client_sd)
-        print("S>", alias)
+        print("s>", alias)
         sendString("En el aeropuerto hay avione", client_sd)
-        print("S>", "En el aeropuerto hay avione")
+        print("s>", "En el aeropuerto hay avione")
     except:
         print("Error de conexión")
 
@@ -102,39 +88,35 @@ def connect(sd):
 
 
 def disconnect(sd):
-    newsd, client = sd.accept()
-    print("Client connected")
 
     # receive
-    REQUEST_LEN = 2
+    REQUEST_LEN = 1
     for _ in range(REQUEST_LEN):
-        msg = readString(newsd)
-        print("C>", msg)
+        msg = readString(sd)
+        print("c>", msg)
 
     # answer
     try:
-        sendString("0", newsd)
-        print("S>", "0")
+        sendString("0", sd)
+        print("s>", "0")
     except:
         print("Error de conexión")
 
 
 def send_good(sd):
-    newsd, client = sd.accept()
-    print("Client connected")
 
     # receive
-    REQUEST_LEN = 4
+    REQUEST_LEN = 3
     for _ in range(REQUEST_LEN):
-        msg = readString(newsd)
-        print("C>", msg)
+        msg = readString(sd)
+        print("c>", msg)
 
     # answer
     try:
-        sendString("0", newsd)
-        print("S>", "0")
-        sendString("69", newsd)
-        print("S>", "69")
+        sendString("0", sd)
+        print("s>", "0")
+        sendString("69", sd)
+        print("s>", "69")
         
         time.sleep(1)
 
@@ -143,29 +125,27 @@ def send_good(sd):
         client_sd.connect(client_addr)
 
         sendString("SEND MESS ACK", client_sd)
-        print("S>", "SEND MESS ACK")
+        print("s>", "SEND MESS ACK")
         sendString("69", client_sd)
-        print("S>", "69")
+        print("s>", "69")
     except:
         print("Error de conexión")
 
     
 def send_bad(sd):
-    newsd, client = sd.accept()
-    print("Client connected")
 
     # receive
-    REQUEST_LEN = 4
+    REQUEST_LEN = 3
     for _ in range(REQUEST_LEN):
-        msg = readString(newsd)
-        print("C>", msg)
+        msg = readString(sd)
+        print("c>", msg)
 
     # answer
     try:
-        sendString("0", newsd)
-        print("S>", "0")
-        sendString("69", newsd)
-        print("S>", "69")
+        sendString("0", sd)
+        print("s>", "0")
+        sendString("69", sd)
+        print("s>", "69")
         
         # no ack
     except:
@@ -173,29 +153,36 @@ def send_bad(sd):
 
 
 def connected_users(sd):
-    newsd, client = sd.accept()
-    print("Client connected")
+
+    # answer
+    try:
+        sendString("0", sd)
+        print("s>", "0")
+
+        sendString("2", sd)
+        print("s>", "2")
+        sendString("chincheto77", sd)
+        print("s>", "chincheto77")
+        sendString("tonacho", sd)
+        print("s>", "tonacho")
+    except:
+        print("Error de conexión")
+    
+
+def unregister(sd):
 
     # receive
     REQUEST_LEN = 1
     for _ in range(REQUEST_LEN):
-        msg = readString(newsd)
-        print("C>", msg)
+        msg = readString(sd)
+        print("c>", msg)
 
     # answer
     try:
-        sendString("0", newsd)
-        print("S>", "0")
-
-        sendString("2", newsd)
-        print("S>", "2")
-        sendString("chincheto77", newsd)
-        print("S>", "chincheto77")
-        sendString("tonacho", newsd)
-        print("S>", "tonacho")
+        sendString("0", sd)
+        print("s>", "0")
     except:
         print("Error de conexión")
-    
 
 
 def main():
@@ -214,14 +201,43 @@ def main():
 
 
     # main loop
+    while True:
+        try:
+            # accept connection
+            try:
+                newsd, client = sd.accept()
+                print("Client connected")
+            except:
+                print("Error en la conexión")
+                continue
+            
+            # treat petition
+            op = readString(newsd)
+            print("s>", op)
 
-    register(sd)
-    connect(sd)
-    send_good(sd)
-    send_bad(sd)
-    disconnect(sd)
-    connected_users(sd)
-    # generic(sd)
+            match op:
+                case "REGISTER":
+                    register(newsd)
+                    
+                case "CONNECT":
+                    connect(newsd, client)
+                
+                case "SEND":
+                    send_good(newsd)
+                    # send_bad(sd)
+
+                case "CONNECTEDUSERS":
+                    connected_users(newsd)
+                case "DISCONNECT":
+                    disconnect(newsd)
+
+                case "UNREGISTER":
+                    unregister(newsd)
+            
+            # generic(sd)
+
+        except KeyboardInterrupt:
+            break
 
     sd.close()
 

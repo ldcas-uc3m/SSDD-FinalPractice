@@ -15,8 +15,8 @@ class client:
     _username = None
     _alias = None
     _date = None
-    conversation_sd = None
-    conversation_thread = None
+    listen_sd = None
+    listen_thread = None
     id = 0
 
 
@@ -49,27 +49,27 @@ class client:
     # *
     # * @param sd       - client socket
     # * @param window   - client window
-    def conversation(sd: socket.socket, window: sg.Window):
+    def listen(sd: socket.socket, window: sg.Window):
         sd.listen(True)
 
         while True:
             try:
-                client.conversation_sd = sd.accept()[0]
+                client.listen_sd = sd.accept()[0]
             
 
                 # read message
-                op = readString(client.conversation_sd)
+                op = readString(client.listen_sd)
                 if op not in ("SEND MESSAGE", "SEND MESS ACK"):
                     continue
 
                 if op == "SEND MESS ACK":
-                    id = readString(client.conversation_sd)
+                    id = readString(client.listen_sd)
                     window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
 
                 
-                sender = readString(client.conversation_sd)
-                receiver = readString(client.conversation_sd)
-                msg = readString(client.conversation_sd)
+                sender = readString(client.listen_sd)
+                receiver = readString(client.listen_sd)
+                msg = readString(client.listen_sd)
 
                 window['_SERVER_'].print("s> MESSAGE " + receiver + " FROM " + sender)
                 window['_SERVER_'].print("   " + msg)
@@ -85,9 +85,6 @@ class client:
     # * @param alias - User name to register in the system
     # * @param date  - User birthdate
     # *
-    # * @return OK if successful
-    # * @return USER_ERROR if the user is already registered
-    # * @return ERROR if another error occurred
     @staticmethod
     def register(user, alias, date, window: sg.Window):
 
@@ -128,11 +125,9 @@ class client:
 
 
     # *
-    # 	 * @param alias - User name to unregister from the system
+    # 	 * @param alias  - User name to unregister from the system
+    # 	 * @param window - client window
     # 	 *
-    # 	 * @return OK if successful
-    # 	 * @return USER_ERROR if the user does not exist
-    # 	 * @return ERROR if another error occurred
     @staticmethod
     def unregister(alias, window: sg.Window):
         
@@ -150,44 +145,43 @@ class client:
             match int(readString(sd)):
                 case 0:
                     window['_SERVER_'].print("s> UNREGISTER OK")
+                    client._alias = None
                 
                 case 1:
                     window['_SERVER_'].print("s> USER DOES NOT EXIST")
                 
                 case 2:
-                    window['_SERVER_'].print("s> REGISTER FAIL")
+                    window['_SERVER_'].print("s> UNREGISTER FAIL")
                 
                 case _:
-                    window['_SERVER_'].print("s> REGISTER FAIL")
+                    window['_SERVER_'].print("s> UNREGISTER FAIL")
             
             sd.close()
 
         except:
             sd.close()
-            window['_SERVER_'].print("s> REGISTER FAIL")
+            window['_SERVER_'].print("s> UNREGISTER FAIL")
 
 
     # *
-    # * @param alias - User name to connect to the system
+    # * @param alias  - User name to connect to the system
+    # * @param window - client window
     # *
-    # * @return OK if successful
-    # * @return USER_ERROR if the user does not exist or if it is already connected
-    # * @return ERROR if another error occurred
     @staticmethod
     def connect(alias, window: sg.Window):
 
-        if client.conversation_sd != None:
+        if client.listen_sd != None:
             window['_CLIENT_'].print("c> CONNECT FAIL")
             return
 
         # create new socket on free port
-        client.conversation_sd = socket.socket()
-        client.conversation_sd.bind(('', 0))  # by using 0 the system gives a random free port
-        port = client.conversation_sd.getsockname()[1]
+        client.listen_sd = socket.socket()
+        client.listen_sd.bind(('', 0))  # by using 0 the system gives a random free port
+        port = client.listen_sd.getsockname()[1]
 
         # create thread
-        client.conversation_thread = threading.Thread(target=client.conversation, args=(client.conversation_sd, window))
-        client.conversation_thread.start()
+        client.listen_thread = threading.Thread(target=client.listen, args=(client.listen_sd, window))
+        client.listen_thread.start()
 
         # send message
         try:
@@ -232,24 +226,22 @@ class client:
 
     # *
     # * @param user - User name to disconnect from the system
+    # * @param window - client window
     # *
-    # * @return OK if successful
-    # * @return USER_ERROR if the user does not exist
-    # * @return ERROR if another error occurred
     @staticmethod
     def disconnect(alias, window: sg.Window):
 
-        if client.conversation_sd == None:
+        if client.listen_sd == None:
             window['_CLIENT_'].print("c> DISCONNECT FAIL")
             return
 
         # close socket
         try:
-            client.conversation_sd.close()
+            client.listen_sd.close()
         except Exception as e:
             print(e)
 
-        client.conversation_sd = None
+        client.listen_sd = None
 
 
         # send message
@@ -289,12 +281,11 @@ class client:
 
 
     # *
-    # * @param user    - Receiver user name
-    # * @param message - Message to be sent
+    # * @param alias_src - Sender user name
+    # * @param alias_dst - Receiver user name
+    # * @param message   - Message to be sent
+    # * @param window    - user window
     # *
-    # * @return OK if the server had successfully delivered the message
-    # * @return USER_ERROR if the user is not connected (the message is queued for delivery)
-    # * @return ERROR the user does not exist or another error occurred
     @staticmethod
     def send(alias_src, alias_dst, message, window: sg.Window):
         # print("SEND " + alias_dst + " " + message)
@@ -346,11 +337,7 @@ class client:
     # * @param user    - Receiver user name
     # * @param message - Message to be sent
     # * @param file    - file  to be sent
-
     # *
-    # * @return OK if the server had successfully delivered the message
-    # * @return USER_ERROR if the user is not connected (the message is queued for delivery)
-    # * @return ERROR the user does not exist or another error occurred
     @staticmethod
     def sendAttach(user, message, file, window: sg.Window):
         window['_SERVER_'].print("s> SENDATTACH MESSAGE FAIL")
@@ -359,6 +346,8 @@ class client:
         # TODO (?): Send Attach
 
 
+    # * @param window - user window
+    # *
     @staticmethod
     def connectedUsers(window):
 
@@ -408,7 +397,8 @@ class client:
 
         return 2
 
-
+    # *
+    # * @brief registration window
     @staticmethod
     def window_register():
         layout_register = [
@@ -474,6 +464,8 @@ class client:
         return True
 
 
+    # *
+    # * @brief main function
     def main(argv):
 
         if (not client.parseArguments(argv)):
@@ -518,9 +510,9 @@ class client:
                 sg.Popup('Closing Client APP', title='Closing', button_type=5, auto_close=True, auto_close_duration=1)
                 break
 
-            # if (values['_IN_'] == '') and (event != 'REGISTER' and event != 'CONNECTED USERS'):
-            #    window['_CLIENT_'].print("c> No text inserted")
-            #    continue
+            if (values['_IN_'] == '') and (event != 'REGISTER' and event != 'CONNECTED USERS'):
+               window['_CLIENT_'].print("c> No text inserted")
+               continue
 
             if (client._alias == None or client._username == None or client._alias == 'Text' or client._username == 'Text' or client._date == None) and (event != 'REGISTER'):
                 sg.Popup('NOT REGISTERED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
@@ -547,12 +539,15 @@ class client:
 
 
             elif (event == 'DISCONNECT'):
+                if (client.listen_sd == None):
+                    sg.Popup('NOT CONNECTED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
+                    continue
                 window['_CLIENT_'].print('c> DISCONNECT ' + client._alias)
                 client.disconnect(client._alias, window)
 
 
             elif (event == 'SEND'):
-                if (client.conversation_sd == None):
+                if (client.listen_sd == None):
                     sg.Popup('NOT CONNECTED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
                     continue
 
@@ -575,7 +570,7 @@ class client:
 
 
             elif (event == 'CONNECTED USERS'):
-                if (client.conversation_sd == None):
+                if (client.listen_sd == None):
                     sg.Popup('NOT CONNECTED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
                     continue
                 
