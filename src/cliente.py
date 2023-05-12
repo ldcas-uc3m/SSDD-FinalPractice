@@ -555,6 +555,7 @@ class client:
                 if (client.conversation_sd == None):
                     sg.Popup('NOT CONNECTED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
                     continue
+
                 window['_CLIENT_'].print('c> SEND ' + values['_INDEST_'] + " " + values['_IN_'])
 
                 if (values['_INDEST_'] != '' and values['_IN_'] != '' and values['_INDEST_'] != 'User' and values['_IN_'] != 'Text') :
@@ -574,6 +575,10 @@ class client:
 
 
             elif (event == 'CONNECTED USERS'):
+                if (client.conversation_sd == None):
+                    sg.Popup('NOT CONNECTED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
+                    continue
+                
                 window['_CLIENT_'].print("c> CONNECTEDUSERS")
                 client.connectedUsers(window)
 

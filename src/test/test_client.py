@@ -8,8 +8,6 @@ import sys
 sys.path.append('..')
 from lib.lines import *
 
-# controls the lenght (in number of messages) of the expected answer
-ANSWER_LEN = 1  
 
 
 def main():
@@ -29,24 +27,25 @@ def main():
 
     # main loop
     while True:
+        msg_len = int(input("Longitud del mensaje? "))
+        answer_len = int(input("Longitud de la respuesta? "))
+
         # establish connection
         try:
             sd.connect(server_addr)
         except ConnectionRefusedError:
             print("Error en la conexión")
             return
-        try:
-            msg = input()
+        
+        # message
+        for _ in range(msg_len):
+            msg = input("C> ")
             sendString(msg, sd)
-
-            # if msg == "EXIT":
-            #     break
+        
+        # answer
+        for _ in range(answer_len):
+            print("S>", readString(sd))
             
-            for _ in range(ANSWER_LEN):
-                print("S>", readString(sd))
-                
-        except:
-            break  
         sd.close()
     
 
