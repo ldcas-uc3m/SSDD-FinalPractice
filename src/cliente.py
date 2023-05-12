@@ -1,5 +1,3 @@
-import subprocess
-import sys
 import PySimpleGUI as sg
 import argparse
 import socket
@@ -57,20 +55,28 @@ class client:
         while True:
             try:
                 client.conversation_sd = sd.accept()[0]
+            
+
+                # read message
+                op = readString(client.conversation_sd)
+                if op not in ("SEND MESSAGE", "SEND MESS ACK"):
+                    continue
+
+                if op == "SEND MESS ACK":
+                    id = readString(client.conversation_sd)
+                    window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
+
+                
+                sender = readString(client.conversation_sd)
+                receiver = readString(client.conversation_sd)
+                msg = readString(client.conversation_sd)
+
+                window['_SERVER_'].print("s> MESSAGE " + receiver + " FROM " + sender)
+                window['_SERVER_'].print("   " + msg)
+                window['_SERVER_'].print("   END")
+
             except:
                 exit()
-
-            # read message
-            if readString(client.conversation_sd) != "SEND MESSAGE":
-                continue
-            
-            sender = readString(client.conversation_sd)
-            receiver = readString(client.conversation_sd)
-            msg = readString(client.conversation_sd)
-
-            window['_CLIENT_'].print("c> MESSAGE " + receiver + " FROM " + sender)
-            window['_CLIENT_'].print("   " + msg)
-            window['_CLIENT_'].print("   END")
 
 
 
@@ -326,14 +332,6 @@ class client:
                     window['_SERVER_'].print("s> SEND FAIL")
                     sd.close()
                     return
-            
-            # wait for ack
-            # TODO: what if no ack?
-            try:
-                if readString(sd) == "SEND MESS ACK" and int(readString(sd)) == client.id:
-                    window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
-            except:
-                window['_SERVER_'].print("s> SEND FAIL")
                 
             sd.close()
             client.id += 1
@@ -554,6 +552,9 @@ class client:
 
 
             elif (event == 'SEND'):
+                if (client.conversation_sd == None):
+                    sg.Popup('NOT CONNECTED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
+                    continue
                 window['_CLIENT_'].print('c> SEND ' + values['_INDEST_'] + " " + values['_IN_'])
 
                 if (values['_INDEST_'] != '' and values['_IN_'] != '' and values['_INDEST_'] != 'User' and values['_IN_'] != 'Text') :

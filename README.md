@@ -331,7 +331,7 @@ s> SEND MESSAGE <id> OK
 Como se verá posteriormente, siempre que el servidor envía con éxito un mensaje a un usuario, descarta el mensaje eliminándolo del servidor. Es decir, el servidor solo almacena los mensajes pendientes de entrega, cada vez que se entrega con éxito un mensaje se borra del servidor.
 
 ### 6.6 Recepción de mensajes
-Cada vez que el cliente reciba un mensaje a través del hilo creado para ello, deberá mostrar en el cuadro de texto izquierdo de la interfaz el siguiente mensaje:
+Cada vez que el cliente reciba un mensaje a través del hilo creado para ello, deberá mostrar en el cuadro de texto derecho de la interfaz el siguiente mensaje:
 ```
 s> MESSAGE <id> FROM <userName>
    <message>

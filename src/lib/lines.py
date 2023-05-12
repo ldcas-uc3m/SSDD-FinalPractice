@@ -20,7 +20,11 @@ def readString(sd: socket.socket):
     msg = ''
 
     while True:
-        char = sd.recv(1)
+        try:
+            char = sd.recv(1)
+        except Exception as e:
+            raise e
+        
         if (char == b'\0'):
             return(msg)
 

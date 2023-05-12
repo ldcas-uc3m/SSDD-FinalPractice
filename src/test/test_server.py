@@ -9,10 +9,10 @@ import time
 sys.path.append('..')
 from lib.lines import *
 
-
+client_addr = None
 
 def generic(sd):
-    newsd, client_addr = sd.accept()
+    newsd, client = sd.accept()
     print("Client connected")
 
     # receive
@@ -32,7 +32,7 @@ def generic(sd):
 
 def register(sd):
 
-    newsd, client_addr = sd.accept()
+    newsd, client = sd.accept()
     print("Client connected")
 
     # receive
@@ -51,8 +51,10 @@ def register(sd):
 
 
 def connect(sd):
+    global client_addr
+    
     # accept connection
-    newsd, client_addr = sd.accept()
+    newsd, client = sd.accept()
     print("Client connected")
 
     # receive
@@ -63,13 +65,14 @@ def connect(sd):
 
     alias = readString(newsd)
     print("C>", alias)
-    port = readString(newsd)
-    print("C>", port)
+    client_port = readString(newsd)
+    print("C>", client_port)
 
 
     client_sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_addr = (client[0], int(client_port))
     try:
-        client_sd.connect((client_addr[0], int(port)))
+        client_sd.connect(client_addr)
     except ConnectionRefusedError:
         print("Error en la conexión")
         return
@@ -99,7 +102,7 @@ def connect(sd):
 
 
 def disconnect(sd):
-    newsd, client_addr = sd.accept()
+    newsd, client = sd.accept()
     print("Client connected")
 
     # receive
@@ -117,7 +120,7 @@ def disconnect(sd):
 
 
 def send_good(sd):
-    newsd, client_addr = sd.accept()
+    newsd, client = sd.accept()
     print("Client connected")
 
     # receive
@@ -136,16 +139,19 @@ def send_good(sd):
         time.sleep(1)
 
         # ack
-        sendString("SEND MESS ACK", newsd)
+        client_sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_sd.connect(client_addr)
+
+        sendString("SEND MESS ACK", client_sd)
         print("S>", "SEND MESS ACK")
-        sendString("69", newsd)
+        sendString("69", client_sd)
         print("S>", "69")
     except:
         print("Error de conexión")
 
     
 def send_bad(sd):
-    newsd, client_addr = sd.accept()
+    newsd, client = sd.accept()
     print("Client connected")
 
     # receive
@@ -167,7 +173,7 @@ def send_bad(sd):
 
 
 def connected_users(sd):
-    newsd, client_addr = sd.accept()
+    newsd, client = sd.accept()
     print("Client connected")
 
     # receive
