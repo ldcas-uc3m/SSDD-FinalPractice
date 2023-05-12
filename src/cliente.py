@@ -6,6 +6,7 @@ import threading
 from lib.lines import *
 
 
+
 class client:
 
     # ****************** ATTRIBUTES ******************
@@ -21,6 +22,7 @@ class client:
 
 
     # ******************** METHODS *******************
+
     # *
     # * @brief Connects to the server and creates a socket
     # *
@@ -43,7 +45,6 @@ class client:
         return sd
     
 
-    # ******************** METHODS *******************
     # *
     # * @brief Receiving messages from the server
     # *
@@ -77,7 +78,6 @@ class client:
 
             except:
                 exit()
-
 
 
     # *
@@ -121,7 +121,6 @@ class client:
         except:
             sd.close()
             window['_SERVER_'].print("s> REGISTER FAIL")
-
 
 
     # *
@@ -220,9 +219,7 @@ class client:
             print(e)
             sd.close()
             window['_SERVER_'].print("s> CONNECT FAIL")
-
         
-
 
     # *
     # * @param user - User name to disconnect from the system
@@ -277,7 +274,6 @@ class client:
         except:
             sd.close()
             window['_SERVER_'].print("s> DISCONNECT FAIL")
-
 
 
     # *
@@ -396,6 +392,7 @@ class client:
             window['_SERVER_'].print("s> CONNECTED USERS FAIL")
 
         return 2
+
 
     # *
     # * @brief registration window
@@ -582,6 +579,7 @@ class client:
             window.Refresh()
 
         window.Close()
+
 
 
 if __name__ == '__main__':

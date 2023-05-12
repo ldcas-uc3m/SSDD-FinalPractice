@@ -1,9 +1,9 @@
 # ---
-# Simple space erraser and conversion SOAP webservice
+# Simple space eraser SOAP webservice
 # ---
 
 
-from spyne import Application, ServiceBase, Iterable, String, Unicode, rpc
+from spyne import Application, ServiceBase, String, rpc
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
 
