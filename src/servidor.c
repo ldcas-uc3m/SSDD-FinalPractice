@@ -329,7 +329,7 @@ void *tratar_peticion(void* args) {
     if (strcmp("REGISTER", opcode)==0){
 
         if (registerUserServer(local_sd, alias)==2){
-            Log("Error when registering the user\n")
+            Log("Error when registering the user\n");
             printf("REGISTER %s FAIL\n", alias);
             result = 2;
             
@@ -347,7 +347,7 @@ void *tratar_peticion(void* args) {
     } else if (strcmp("UNREGISTER", opcode)==0){
 
         if (unregisterUserServer(local_sd, alias)==2){
-            Log("Error when unregistering the user\n")
+            Log("Error when unregistering the user\n");
             printf("UNREGISTER %s FAIL\n", alias);
             result=2;
         } else if (unregisterUserServer(local_sd,alias)==1){
@@ -367,7 +367,7 @@ void *tratar_peticion(void* args) {
         int lastSent;
 
         if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client)==3){
-            Log("Error when connecting the user\n")
+            Log("Error when connecting the user\n");
             printf("CONNECT %s FAIL\n", alias);
             result=3;
         } else if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client)==1){
@@ -394,7 +394,7 @@ void *tratar_peticion(void* args) {
     } else if (strcmp("DISCONNECT", opcode)==0){
 
         if (disconnectUserServer(local_sd, alias, ip_client)==3){
-            Log("Error when disconnecting the user\n")
+            Log("Error when disconnecting the user\n");
             printf("DISCONNECT %s FAIL\n", alias);
             result=3;
         } else if (disconnectUserServer(local_sd, alias, ip_client)==1){
@@ -416,7 +416,7 @@ void *tratar_peticion(void* args) {
         char* alias2 = (char*) malloc(MAX_CHAR * sizeof(char));
         int identifier;
         if (sendMessageStoreServer(local_sd, alias, alias2, &identifier)==2){
-            Log("Error when storing the message the user\n")
+            Log("Error when storing the message the user\n");
             printf("SEND MESSAGE FROM %s to %s FAIL\n", alias, alias2);
             result = 2;
         }else if (sendMessageStoreServer(local_sd, alias, alias2, &identifier)==1){
@@ -450,7 +450,7 @@ void *tratar_peticion(void* args) {
                 users[i] = (char*)malloc(sizeof(char)*MAX_CHAR);
             }
             if (connectedUsersServer(local_sd, &connections, users, ip_client)==2){
-                Log("Error when retrieving list of connected users\n")
+                Log("Error when retrieving list of connected users\n");
                 printf("CONNECTEDUSERS FAIL\n");
                 result=2;
             } else if (connectedUsersServer(local_sd, &connections, users, ip_client)==1){
