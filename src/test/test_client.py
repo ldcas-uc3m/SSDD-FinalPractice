@@ -26,15 +26,15 @@ def main():
     server_addr = (sys.argv[1], int(sys.argv[2]))
     print("Connecting to", server_addr[0], "port", server_addr[1])
 
-    # establish connection
-    try:
-        sd.connect(server_addr)
-    except ConnectionRefusedError:
-        print("Error en la conexión")
-        return
 
     # main loop
     while True:
+        # establish connection
+        try:
+            sd.connect(server_addr)
+        except ConnectionRefusedError:
+            print("Error en la conexión")
+            return
         try:
             msg = input()
             sendString(msg, sd)
@@ -46,9 +46,9 @@ def main():
                 print("S>", readString(sd))
                 
         except:
-            break
+            break  
+        sd.close()
     
-    sd.close()
 
 
 

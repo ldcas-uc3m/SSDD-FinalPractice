@@ -62,17 +62,25 @@ int registerUserServer(int local_sd, char* alias){
     char username[MAX_LINE];
     char datetime[MAX_LINE];
 
+    Log("Enters function\n");
+
    //Receive the username
 
     readLine(local_sd, username, MAX_LINE);
 
+    Log("%s\n", username);
+
    //Recieve the alias
 
-    readLine(local_sd, &(alias), MAX_LINE);
+    readLine(local_sd, alias, MAX_LINE);
+
+    Log("%s,%s\n", username, alias);
 
    //Receive the date of birth
 
     readLine(local_sd, datetime, MAX_LINE);
+
+    Log("%s,%s,%s\n", username, alias, datetime);
 
    //Register the user
 
@@ -311,32 +319,36 @@ void *tratar_peticion(void* args) {
     // copy sd
 	pthread_mutex_lock(&mutex_sd);
 
-    int local_sd = client.sd;  // copy sd
+    int local_sd = client.sd;  // copy sd<s
 
     copiado = true;  // update conditional variable
 	pthread_cond_signal(&c_sd);  // awake main
 	pthread_mutex_unlock(&mutex_sd);
 
-    char* opcode = (char*) malloc(sizeof(char)*MAX_CHAR);
+    char opcode[MAX_CHAR];
     // read opcode
-    readLine(local_sd, &(opcode), MAX_LINE);
+    readLine(local_sd, opcode, MAX_LINE);
 
 
     int result;
-    char* alias = (char*) malloc(MAX_CHAR*sizeof(char));
-
+    char alias[MAX_LINE];
+    Log("%s\n",opcode);
     // treat petition
     if (strcmp("REGISTER", opcode)==0){
 
-        if (registerUserServer(local_sd, alias)==2){
+        Log("Entering Register\n");
+
+        int result = registerUserServer(local_sd, alias);
+
+        if (result==2){
             Log("Error when registering the user\n");
             printf("REGISTER %s FAIL\n", alias);
             result = 2;
             
-        } else if (registerUserServer(local_sd, alias)==0){
+        } else if (result==0){
             printf("REGISTER %s OK\n", alias);
             result = 0;
-        } else if (registerUserServer(local_sd, alias)==1){
+        } else if (result==1){
             printf("REGISTER %s FAIL\n", alias);
             result = 1;
         }
@@ -345,6 +357,8 @@ void *tratar_peticion(void* args) {
         sendMessage(local_sd, buffer, strlen(buffer) + 1);
 
     } else if (strcmp("UNREGISTER", opcode)==0){
+
+        Log("Entering unregister\n");
 
         if (unregisterUserServer(local_sd, alias)==2){
             Log("Error when unregistering the user\n");
@@ -362,6 +376,8 @@ void *tratar_peticion(void* args) {
         sendMessage(local_sd, buffer, strlen(buffer) + 1);
 
     } else if (strcmp("CONNECT", opcode)==0){
+
+        Log("Entering connect\n");
 
         int nonSent;
         int lastSent;
@@ -393,6 +409,8 @@ void *tratar_peticion(void* args) {
 
     } else if (strcmp("DISCONNECT", opcode)==0){
 
+        Log("Entering disconnect\n");
+
         if (disconnectUserServer(local_sd, alias, ip_client)==3){
             Log("Error when disconnecting the user\n");
             printf("DISCONNECT %s FAIL\n", alias);
@@ -413,6 +431,9 @@ void *tratar_peticion(void* args) {
         sendMessage(local_sd, buffer, strlen(buffer) + 1); 
     
     } else if (strcmp("SEND", opcode)==0){
+
+        Log("Entering Send\n");
+
         char* alias2 = (char*) malloc(MAX_CHAR * sizeof(char));
         int identifier;
         if (sendMessageStoreServer(local_sd, alias, alias2, &identifier)==2){
@@ -441,6 +462,9 @@ void *tratar_peticion(void* args) {
         }
 
     } else if (strcmp("CONNECTEDUSERS", opcode)==0){
+
+        Log("Entering ConnectedUsers\n");
+
         int connections;
         char** users;
         if (seeNumberConnected(&connections)!=-1){

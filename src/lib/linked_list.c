@@ -18,12 +18,12 @@ pthread_mutex_t mutex_list;
 Todas estas funciones devuelve 0 si se ejecutan con éxito y -1 en caso de algún error.
 */
 
-int destroyMessages(Mensajes l){
+int destroyMessages(Mensajes* l){
        /*
     Elimina todos los elementos de la lista l.
     */
 
-    Mensajes aux = l;
+    Mensajes aux = *l;
 
     while (aux != NULL) {
         Mensajes tmp = aux;
@@ -36,12 +36,12 @@ int destroyMessages(Mensajes l){
     return 0; 
 }
 
-int numberNonSent(Mensajes l, char* alias){
+int numberNonSent(Mensajes* l, char* alias){
     /*
     Recorre todos los elementos de la lista l y mira cuantos mensajes quedan por enviar
     */
     int counter = 0;
-    Mensajes aux = l;
+    Mensajes aux = *l;
     while (aux != NULL) {
         if (aux->sent == false){
             counter +=1;
@@ -54,8 +54,8 @@ int numberNonSent(Mensajes l, char* alias){
     return counter;
 }
 
-int getMessage(Mensajes l, char* aliasSender, char* message, int identifier){
-    Mensajes aux = l;
+int getMessage(Mensajes* l, char* aliasSender, char* message, int identifier){
+    Mensajes aux = *l;
     bool found = false;
     while (aux != NULL && found ==false) {
         if (aux->id == identifier){
@@ -79,7 +79,7 @@ int getMessage(Mensajes l, char* aliasSender, char* message, int identifier){
     return 0;
 }
 
-int storeMessage(Mensajes l, char* aliasSender, char* message, int* identifier){
+int storeMessage(Mensajes* l, char* aliasSender, char* message, int* identifier){
     /*
     Inserta una nueva tupla en la lista l.
     La inserción se hace al principio de la lista.
@@ -87,7 +87,7 @@ int storeMessage(Mensajes l, char* aliasSender, char* message, int* identifier){
 
     // traverse the list
     int id = 0;
-    Mensajes aux = l;  // head
+    Mensajes aux = *l;  // head
     if (aux!=NULL){
         id = aux->id;
     }
@@ -133,18 +133,18 @@ int storeMessage(Mensajes l, char* aliasSender, char* message, int* identifier){
     // link to the list
     if (l == NULL) {  // emtpy list, insert in head
         // pthread_mutex_lock(&mutex_list);
-        l = ptr;
+        *l = ptr;
     }
     else {  // insert in head
         // pthread_mutex_lock(&mutex_list);
-        ptr->next = l;
-        l = ptr;
+        ptr->next = *l;
+        *l = ptr;
     }
     return 0;
 }
 
-int notifyReceived(Mensajes l, int identifier){
-    Mensajes aux = l;
+int notifyReceived(Mensajes* l, int identifier){
+    Mensajes aux = *l;
     bool found = false;
     while (aux != NULL && found ==false) {
         if (aux->id == identifier){
@@ -198,7 +198,7 @@ int connectUser(List* l, char* alias, char* IP, int port, int* nonSent, int* las
                 aux->connected = true;
                 strcpy(aux->IP, IP);
                 aux->port = port;
-                *nonSent = numberNonSent(aux->listMessages,alias);
+                *nonSent = numberNonSent(&(aux->listMessages),alias);
                 *lastSent = aux->lastIDSent;
                 pthread_mutex_unlock(&mutex_list);
                 return 0;
@@ -426,7 +426,7 @@ int sendMessageStore(List* l, char* aliasSender, char* aliasRecieved, char* mess
         return -1;
     } 
 
-    int response = storeMessage(node1->listMessages, aliasSender, message, identifier); 
+    int response = storeMessage(&(node1->listMessages), aliasSender, message, identifier); 
     if(response==-1){
         Log("Error when storing the message");
         pthread_mutex_unlock(&mutex_list);
@@ -490,7 +490,7 @@ int sendMessageDeliver(List* l, char* aliasSender, char* aliasReceived, char* me
 
     char* alSender = (char*) malloc(MAX_CHAR);
     char* mes = (char*) malloc(MAX_CHAR);
-    int response = getMessage(node1->listMessages, alSender, mes, identifier);
+    int response = getMessage(&(node1->listMessages), alSender, mes, identifier);
     if (response == 0){
         strcpy(aliasSender, alSender);
         strcpy(message, mes);
@@ -610,7 +610,7 @@ int confirmReceived(List *l, char* aliasReceiver, int identifier){
         return -1;
     } 
 
-    int response = notifyReceived(node1->listMessages, identifier);
+    int response = notifyReceived(&(node1->listMessages), identifier);
     if(response == -1){
         Log("Error when setting a message as sent\n");
         pthread_mutex_unlock(&mutex_list);
@@ -637,7 +637,7 @@ int destroyList(List *l){
         free(tmp->alias);
         free(tmp->datetime);
         free(tmp->IP);
-        destroyMessages(tmp->listMessages);
+        destroyMessages(&(tmp->listMessages));
         free(tmp);
     }
 
