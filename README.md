@@ -684,7 +684,7 @@ python3 ./client.py -s <IP> -p <PUERTO>
 
 Por e.g.: 
 ```bash
-$ python3 ./client.py -s localhost -p 8888
+python3 ./client.py -s localhost -p 8888
 ```
 
 ### Tests del cliente
@@ -694,8 +694,53 @@ Cuenta con funciones para simular una respuesta del servidor, las cuales son lla
 
 Para ejecutarlo (importante hacerlo desde la carpeta [`test/`](src/test/), debido a los imports):
 ```bash
-cd src/test
-python .\test_server.py <puerto>
+cd src/test/
+python ./test_server.py <puerto>
+```
+
+
+
+## Webservice
+
+Es necesario instalar (aparte de Python3), [`spyne`](https://pypi.org/project/spyne/):
+```bash
+pip3 install spyne
+```
+
+Windows es posible que de por culo y quizás sea necesario usar:
+```powershell
+python -m pip install spyne
+```
+
+Se podrá ejecutar el programa cliente de la siguiente forma:
+```bash
+python3 ./ws-format-service.py -p <puerto>
+```
+
+Por e.g.: 
+```bash
+python3 ./client.py -s localhost -p 8080
+```
+
+**Si el servidor y el WS ejecutan en la misma máquina, los puertos deben de ser distintos.**
+
+
+### Tests del webservice
+El script [`test_webservice_client`](src/test/test_webservice_client.py) es una herramienta usada durante el desarrollo para probar el webservice.  
+
+Para ejecutarlo es necesario instalar [`zeep`](https://pypi.org/project/zeep/):
+```bash
+pip3 install zeep
+```
+
+Windows es posible que de por culo y quizás sea necesario usar:
+```powershell
+python -m pip install zeep
+```
+
+Y ejecutarlo:
+```bash
+python .src/test/test_server.py -s <IP webservice> -p <puerto>
 ```
 
 
