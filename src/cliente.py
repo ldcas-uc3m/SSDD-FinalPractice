@@ -313,13 +313,17 @@ class client:
             window['_SERVER_'].print("s> SEND FAIL")
             return
         try:
+
+            # format msg
+            formatted_msg = client.format_message(message)
+
+            # send
             sendString("SEND", sd)
             sendString(alias_src, sd)
             sendString(alias_dst, sd)
-            sendString(client.format_message(message), sd)
+            sendString(formatted_msg, sd)
             
-            # wait for result
-
+            # result
             match int(readString(sd)):
                 case 0:
                     # get message id
