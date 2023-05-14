@@ -79,4 +79,7 @@ if __name__ == '__main__':
     logging.info("listening to http://127.0.0.1:" + str(port))
     logging.info("wsdl is at: http://localhost:" + str(port) + "/?wsdl")
 
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        logging.info("closing server")

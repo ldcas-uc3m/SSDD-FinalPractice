@@ -1,0 +1,17 @@
+\subsection{Cliente}
+
+Nótese que es necesario que tanto el servidor como el servicion web estén ejecutando antes de ejecutar el cliente para su correcto funcionamiento.\newline
+
+A la hora de ejecutar el cliente, es necesario instalar los módulos de Python necesarios: \href{https://pypi.org/project/zeep/}{\texttt{zeep}} y \href{https://pypi.org/project/pysimplegui/}{\texttt{pysimplegui}}.\\
+
+Ésto se puede realizar mediante el uso de la herramienta \href{https://pypi.org/project/pip/}{\texttt{pip}}:
+
+\begin{lstlisting}[language=bash]
+    $ pip3 install -r requirements.txt
+\end{lstlisting}
+
+A la hora de la ejecución, hay que especificar el puerto e IP tanto del servidor como del servicio web:
+\begin{lstlisting}[language=bash]
+    $ python3 ./src/client.py -s <server IP> -p <server port>
+    -ws <webserver IP> -wp <webserver port>
+\end{lstlisting}

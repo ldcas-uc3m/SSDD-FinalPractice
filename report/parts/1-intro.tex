@@ -1,1 +1,16 @@
 \section{Introducción y consideraciones generales}
+
+La siguiente memoria relata las decisiones de diseño e implementación de la presente práctica, así como instrucciones de compilación y ejecución.\\
+
+La funcionalidad de cada archivo fuente, de manera general, es:
+\begin{itemize}
+    \item \texttt{run.sh}: Ejemplo de uso y ejecución.
+    \item \texttt{src/servidor.c}: Código fuente del servidor.
+    \item \texttt{src/lib/linked\_list.c}: Librería de una lista enlazada para almacenar la información de cada cliente.
+    \item \texttt{src/lib/lines.c}: Librería con funciones para la lectura y escritura de buffers de datos que se usarán para la comunicación del servidor.
+    \item \texttt{src/lib/comm.h}: Archivo \textit{header} común donde se definen las variables comunes para la implementación del servidor.
+    \item \texttt{src/lib/server\_impl.c}: Implementación de las funciones de comunicación del servidor con la estructura de datos
+    \item \texttt{src/cliente.py}: Código fuente del cliente.
+    \item \texttt{src/lib/lines.py}: Implementación de funciones para la lectura y escritura de buffers de datos que se usarán para la comunicación del cliente.
+    \item \texttt{src/ws-format-service.py}: Código fuente del servicio web.
+\end{itemize}

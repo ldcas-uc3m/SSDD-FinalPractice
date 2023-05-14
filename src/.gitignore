@@ -13,3 +13,6 @@
 # Python
 
 __pycache__/
+
+
+*.log

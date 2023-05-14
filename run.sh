@@ -15,7 +15,7 @@ make
 ./servidor -p $SERVER_PORT
 
 # webservice
-python3 ws-format-service.py -p $WEBSERVICE_PORT
+python3 ws-format-service.py -p $WEBSERVICE_PORT & > ws-log.log
 
 # client
 python3 cliente.py -s $SERVER_IP -p $SERVER_PORT -ws $WEBSERVICE_IP -wp $WEBSERVICE_PORT

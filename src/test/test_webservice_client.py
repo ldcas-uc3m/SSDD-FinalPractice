@@ -46,10 +46,16 @@ def main(argv):
         exit()
 
     wsdl_url = "http://" + server + ":" + str(port) + "/?wsdl"
-    soap = zeep.Client(wsdl=wsdl_url)
 
-    result = soap.service.format("En     el aeropuerto   hay   avione   ")
-    print(result)
+    try:
+        soap = zeep.Client(wsdl=wsdl_url)
+    except:
+        print("Connection refused")
+        return
+
+    while True:
+        msg = input("> ")
+        print(":", soap.service.format(msg))
 
 
 if __name__ == '__main__':

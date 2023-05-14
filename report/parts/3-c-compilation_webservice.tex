@@ -1,0 +1,14 @@
+\subsection{Servicio web}
+
+A la hora de ejecutar el cliente, es necesario instalar \href{https://pypi.org/project/spyne/}{\texttt{spyne}}.\\
+
+Ésto se puede realizar mediante el uso de la herramienta \href{https://pypi.org/project/pip/}{\texttt{pip}}:
+
+\begin{lstlisting}[language=bash]
+    $ pip3 install spyne
+\end{lstlisting}
+
+A la hora de la ejecución, hay que especificar el puerto donde lanzar el servicio web:
+\begin{lstlisting}[language=bash]
+    $ python3 ./src/ws-format-service.py -p <port>
+\end{lstlisting}
