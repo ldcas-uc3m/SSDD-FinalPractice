@@ -1,9 +1,10 @@
 # Práctica Final: Servicio de envío de mensajes
 By Luis Daniel Casais Mezquida & Lucía María Moya Sans  
-Sistemas Distribuídos 22/23  
+Sistemas Distribuidos 22/23  
 Bachelor's Degree in Computer Science and Engineering  
 Universidad Carlos III de Madrid
 
+[Instalación y ejecución](#instalación-y-ejecución).
 
 # Descripción del ejercicio
 
@@ -37,7 +38,7 @@ Universidad Carlos III de Madrid
     5. [Envío de un mensaje cliente-servidor](#85-envío-de-un-mensaje-cliente-servidor)
     6. [Envío de un mensaje servidor-cliente](#86-envío-de-un-mensaje-servidor-cliente)
     7. [Solicitud de usuarios conectados](#87-solicitud-de-usuarios-conectados)
-8. [Segunda parte](#9-segunda-parte)
+9. [Segunda parte](#9-segunda-parte)
     1. [Desarrollo del servicio web](#91-desarrollo-del-servicio-web)
 
 
@@ -629,9 +630,10 @@ realizado hasta ahora con servicios web.
 
 El objetivo inicial de la práctica es desarrollar un servicio de notificacíon de mensajes entre usuarios conectados a Internet, de forma parecida, aunque con una funcionalidad mucho más simplificada, a lo que ocurre con la aplicacíon WhatsApp.  
 
-Se podrán enviar mensajes de texto de un tama˜no máximo de 256 bytes (incluyendo el código 0 que indica fin de cadena, es decir, como mucho la cadena almacenada en el mensaje tendrá una longitud máxima de 255 caracteres) y de forma opcional se podrá también formatear los mensajes enviados.  
+Se podrán enviar mensajes de texto de un tamaño máximo de 256 bytes (incluyendo el código 0 que indica fin de cadena, es decir, como mucho la cadena almacenada en el mensaje tendrá una longitud máxima de 255 caracteres) y de forma opcional se podrá también formatear los mensajes enviados.  
+
 Los objetivos de esta segunda parte de la práctica son los siguientes:
-1. Desarrollar un servicio Web en Python que permita dar formato a los mensajes enviados por los usuarios del servicio de mensajería.
+1. Desarrollar un servicio Web en Python que permita dar formato a los mensajes enviados por los usuarios del servicio de mensajería ([ws-format-service.py](src/ws-format-service.py)).
 2. Modificar el cliente desarrollado en Python en la parte anterior ([cliente.py](src/cliente.py)) para invocar al servicio web desarrollado.
 
 En las siguientes secciones de describe esta nueva funcionalidad.
@@ -679,13 +681,16 @@ python -m pip install PySimpleGUI
 
 Una vez se han instalado todos los paquetes previos, se podrá ejecutar el programa cliente de la siguiente forma:
 ```bash
-python3 ./client.py -s <IP> -p <PUERTO>
+python3 ./client.py -s <server IP> -p <port> -ws <Webserver IP> -wp <Webserver port>
 ```
 
 Por e.g.: 
 ```bash
-python3 ./client.py -s localhost -p 8888
+python3 ./client.py -s localhost -p 8888 -ws localhost -wp 8080
 ```
+
+**Recordar que antes de lanzar el cliente es necesario lanzar el servidor web ([ver aquí](#webservice)).**
+
 
 ### Tests del cliente
 

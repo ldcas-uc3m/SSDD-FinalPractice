@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import argparse
 import socket
 import threading
+import zeep
 
 from lib.lines import *
 
@@ -12,6 +13,8 @@ class client:
     # ****************** ATTRIBUTES ******************
     _server = None
     _port = -1
+    ws_server = None
+    ws_port = -1
     _quit = 0
     _username = None
     _alias = None
@@ -44,6 +47,25 @@ class client:
 
         return sd
     
+
+    # *
+    # * @brief Formats the message using the format webservice
+    # *
+    # * @param msg - message to format
+    # *
+    # * @return formatted message
+    def format_message(msg: str) -> str:
+        wsdl_url = "http://" + client.ws_server + ":" + str(client.ws_port) + "/?wsdl"
+        try:
+            soap = zeep.Client(wsdl=wsdl_url)
+            formatted_msg = soap.service.format(msg)
+        
+        except Exception as e:
+            print("Error en la conexión al webservice")
+            raise e
+        
+        return formatted_msg
+
 
     # *
     # * @brief Receiving messages from the server
@@ -294,8 +316,8 @@ class client:
             sendString("SEND", sd)
             sendString(alias_src, sd)
             sendString(alias_dst, sd)
-            sendString(message, sd)
-
+            sendString(client.format_message(message), sd)
+            
             # wait for result
 
             match int(readString(sd)):
@@ -323,8 +345,7 @@ class client:
             sd.close()
             client.id += 1
 
-        except Exception as e:
-            print(e)
+        except:
             sd.close()
             window['_SERVER_'].print("s> SEND FAIL")
         
@@ -431,11 +452,12 @@ class client:
         window.Close()
 
 
+
     # *
     # * @brief Prints program usage
     @staticmethod
     def usage() :
-        print("Usage: python3 py -s <server> -p <port>")
+        print("Usage: python3 py -s <server IP> -p <server port> -ws <webservice IP> -ws <webservice port>")
 
 
     # *
@@ -445,20 +467,29 @@ class client:
         parser = argparse.ArgumentParser()
         parser.add_argument('-s', type=str, required=True, help='Server IP')
         parser.add_argument('-p', type=int, required=True, help='Server Port')
+        parser.add_argument('-ws', type=str, required=True, help='Webservice server IP')
+        parser.add_argument('-wp', type=int, required=True, help='Webservice server Port')
         args = parser.parse_args()
 
-        if (args.s is None):
-            parser.error("Usage: python3 py -s <server> -p <port>")
+        if args.s is None or args.ws is None:
+            parser.error("Usage: python3 py -s <server IP> -p <server port> -ws <webservice IP> -ws <webservice port>")
             return False
 
         if ((args.p < 1024) or (args.p > 65535)):
-            parser.error("Error: Port must be in the range 1024 <= port <= 65535")
+            parser.error("Error: Server port must be in the range 1024 <= port <= 65535")
+            return False
+        
+        if ((args.wp < 1024) or (args.wp > 65535)):
+            parser.error("Error: Webservice server port must be in the range 1024 <= port <= 65535")
             return False
 
         client._server = args.s
         client._port = args.p
+        client.ws_server = args.ws
+        client.ws_port = args.wp
 
         return True
+
 
 
     # *
