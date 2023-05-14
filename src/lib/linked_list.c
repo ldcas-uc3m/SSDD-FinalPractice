@@ -193,7 +193,7 @@ int connectUser(List* l, char* alias, char* IP, int port, int* nonSent, int* las
     
     List aux = *l;  // head
     while (aux != NULL) {
-        if (aux->alias == alias) {  // found
+        if (strcmp(aux->alias, alias)==0) {  // found
             if (aux->connected == false){
                 aux->connected = true;
                 strcpy(aux->IP, IP);
@@ -230,7 +230,7 @@ int disconnectUser(List* l, char* alias, char* IP){
     
     List aux = *l;  // head
     while (aux != NULL) {
-        if (aux->alias == alias) {  // found
+        if (strcmp(aux->alias,alias)==0) {  // found
             if (aux->connected == true){
                 if (strcmp(IP, aux->IP)==0){
                     aux->connected = false;
@@ -261,7 +261,7 @@ int registerUser(List* l, char* username, char* alias, char* datetime){
     pthread_mutex_lock(&mutex_list);    
     List aux = *l;  // head
     while (aux != NULL) {
-        if (aux->username == username) {  // key is already inserted
+        if (strcmp(aux->alias,alias)==0) {  // key is already inserted
 
             Log("Username already inserted\n");
 
@@ -304,6 +304,14 @@ int registerUser(List* l, char* username, char* alias, char* datetime){
 
         return 2;
     }
+    ptr->datetime = (char*) malloc(MAX_CHAR);  // new string
+    if (ptr->datetime == NULL) {  // failed allocation
+        free(ptr);
+
+        Log("malloc() fail\n");
+
+        return 2;
+    }
     ptr->IP= (char*) malloc(MAX_CHAR);  // new string
     if (ptr->IP == NULL) {  // failed allocation
         free(ptr);
@@ -319,17 +327,19 @@ int registerUser(List* l, char* username, char* alias, char* datetime){
     strcpy(ptr->datetime, datetime);
     Mensajes listMessages = NULL;
     ptr->listMessages = listMessages;
-
     ptr->next = NULL;
 
+    Log("Guardando %s\n",ptr->username);
+    Log("Guardando %s\n",ptr->alias);
+    Log("Guardando %s\n",ptr->datetime);
 
-    // link to the list
+
+    // TODO link to the list
     if (*l == NULL) {  // emtpy list, insert in head
         // pthread_mutex_lock(&mutex_list);
         *l = ptr;
         pthread_mutex_unlock(&mutex_list);
-    }
-    else {  // insert in head
+    }else {  // insert in head
         // pthread_mutex_lock(&mutex_list);
         ptr->next = *l;
         *l = ptr;
@@ -371,7 +381,7 @@ int unregisterUser(List* l, char* alias){
 
     // resto de elementos
     while (aux != NULL) {
-        if (aux->username == alias) {  // found
+        if (strcmp(aux->alias,alias)==0) {  // found
             back->next = aux->next;
             free(aux->username);
             free(aux->alias);
@@ -446,7 +456,7 @@ int ipPortInfo(List* l, char* aliasSender, char* IP, int* port){
     
     List aux = *l;  // head
     while (aux != NULL) {
-        if (aux->alias == aliasSender) {  // found
+        if (strcmp(aux->alias,aliasSender)==0) {  // found
             strcpy(IP, aux->IP);
             *port = aux->port;
         }else {  // next element
