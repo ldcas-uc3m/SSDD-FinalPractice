@@ -198,19 +198,19 @@ int sendAck(char* aliasSender, int identifier){
     int port;
     char* IP = (char*) malloc(MAX_LINE*sizeof(char));
 
-    printf("preIPPort\n");
-
     int res0 = getIPPort(aliasSender, IP, &port);
 
-    printf("IP: %s, port: %d\n", IP, port);
+    Log("Llegando %d\n", identifier);
 
     if (res0==0){
         client_addr.sin_addr.s_addr = inet_addr(IP);
         client_addr.sin_family = AF_INET;
         client_addr.sin_port = htons(port);
+        Log("Llegando2 %d\n", identifier);
+
         int res = connect(new_socket, (struct sockaddr *) &client_addr, sizeof(client_addr));
         if (res==-1){
-            Log("Error when connecting to the user");
+            Log("Error when connecting to the user\n");
             return -1;
         }else{
             char buffer[MAX_LINE];
@@ -220,7 +220,9 @@ int sendAck(char* aliasSender, int identifier){
             sprintf(buffer, "%i", identifier);
             sendMessage(new_socket, buffer, strlen(buffer) + 1);
 
-            if (close(new_socket)==-1){
+            int res2 = close(new_socket);
+
+            if (res2==-1){
                 return -1;
             }
         }
@@ -235,18 +237,24 @@ int deliver_Message(char* alias, char* aliasSender, int identifier){
 
     int new_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     struct sockaddr_in client_addr;
-    char* message = (char*) malloc(MAX_CHAR*sizeof(char));
+    char message[MAX_LINE];
     int port;
-    char* IP = (char*) malloc(MAX_CHAR*sizeof(char));
+    char IP[MAX_LINE];
 
-    sendMessage_deliver(aliasSender, alias, message, identifier, IP, &port);
+    int existent = sendMessage_deliver(aliasSender, alias, message, identifier, IP, &port);
+
+    if (existent == -1){
+        Log("Error when delivering the message\n");
+        return -1;
+    }
 
     client_addr.sin_addr.s_addr = inet_addr(IP);
     client_addr.sin_family = AF_INET;
     client_addr.sin_port = htons(port);
+    int resul = connect(new_socket, (struct sockaddr *) &client_addr, sizeof(client_addr));
 
-    if (connect(new_socket, (struct sockaddr *) &client_addr, sizeof(client_addr))==-1){
-        Log("Error when connecting to the user");
+    if (resul ==-1){
+        Log("Error when connecting to the user\n");
         disconnect_user(alias, IP);
         return -1;
     }else{
@@ -263,13 +271,16 @@ int deliver_Message(char* alias, char* aliasSender, int identifier){
         sprintf(buffer, "%s", message);
         sendMessage(new_socket, buffer, strlen(buffer) + 1);
 
-        if (sendAck(aliasSender, identifier)==-1){
+        int res0 = sendAck(aliasSender, identifier);
+
+        if (res0==-1){
             disconnect_user(alias, IP);
             close(new_socket);
-            return -2;
+            return -1;
         }
 
-        if (close(new_socket)==-1){
+        int closing  = close(new_socket);
+        if (closing==-1){
             disconnect_user(alias, IP);
             return -1;
         }
@@ -284,7 +295,7 @@ int sendRemainingMessages(int local_sd, char* alias, int nonSent, int lastSent, 
     int i;
     for (i=1;i<=nonSent;i++){
         int identifier = lastSent + i;
-        char* aliasSender = (char*) malloc(MAX_CHAR*sizeof(char));
+        char aliasSender[MAX_LINE];
         int res = deliver_Message(alias, aliasSender, identifier);
         if (res==-1 || res ==-2){
             return -1;

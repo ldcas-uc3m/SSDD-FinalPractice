@@ -131,14 +131,15 @@ int storeMessage(Mensajes* l, char* aliasSender, char* message, int* identifier)
 
 
     // link to the list
-    if (l == NULL) {  // emtpy list, insert in head
+    if (*l == NULL) {  // emtpy list, insert in head
         // pthread_mutex_lock(&mutex_list);
         *l = ptr;
-    }
-    else {  // insert in head
+    }else {  // insert in head
         // pthread_mutex_lock(&mutex_list);
         ptr->next = *l;
         *l = ptr;
+        Log("%s\n",ptr->next->mensaje);
+        Log("%s\n", (*l)->mensaje);
     }
     return 0;
 }
@@ -437,7 +438,7 @@ int sendMessageStore(List* l, char* aliasSender, char* aliasRecieved, char* mess
 
     int response = storeMessage(&(node1->listMessages), aliasSender, message, identifier); 
     if(response==-1){
-        Log("Error when storing the message");
+        Log("Error when storing the message\n");
         pthread_mutex_unlock(&mutex_list);
         return 2;
     }
@@ -458,7 +459,6 @@ int ipPortInfo(List* l, char* aliasSender, char* IP, int* port){
         if (strcmp(aux->alias,aliasSender)==0) {  // found
             strcpy(IP, aux->IP);
             *port = aux->port;
-            printf("IP:%s", IP);
             pthread_mutex_unlock(&mutex_list);
             return 0;
         }else {  // next element
@@ -611,10 +611,12 @@ int confirmReceived(List *l, char* aliasReceiver, int identifier){
         if (strcmp(aux->alias,aliasReceiver)==0) {
             node1 = aux;
         }
-        aux = aux->next;
+    
         if (node1 != NULL) {
             break;
         }
+
+        aux = aux->next;
     }
 
     if (node1 == NULL) { // key not found
