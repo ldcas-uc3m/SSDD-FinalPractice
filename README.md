@@ -724,7 +724,7 @@ python3 ./ws-format-service.py -p <puerto>
 
 Por e.g.: 
 ```bash
-python3 ./client.py -s localhost -p 8080
+python3 ./ws-format-service.py -p 8080
 ```
 
 **Si el servidor y el WS ejecutan en la misma máquina, los puertos deben de ser distintos.**
