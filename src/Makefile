@@ -27,7 +27,7 @@ tests: $(TEST_FILES)
 
 
 clean:
-	rm -f $(BIN_FILES) $(TEST_FILES) *.o *.so lib/*.so
+	rm -f $(BIN_FILES) *.o
 
 
 .SUFFIXES:

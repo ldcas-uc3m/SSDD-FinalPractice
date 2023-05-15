@@ -582,10 +582,9 @@ class client:
                 if (client.listen_sd == None):
                     sg.Popup('NOT CONNECTED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
                     continue
-
-                window['_CLIENT_'].print('c> SEND ' + values['_INDEST_'] + " " + values['_IN_'])
-
+                
                 if (values['_INDEST_'] != '' and values['_IN_'] != '' and values['_INDEST_'] != 'User' and values['_IN_'] != 'Text') :
+                    window['_CLIENT_'].print('c> SEND ' + values['_INDEST_'] + ' ' + values['_IN_'])
                     client.send(client._alias, values['_INDEST_'], values['_IN_'], window)
                 else :
                     window['_CLIENT_'].print("Syntax error. Insert <destUser> <message>")
@@ -593,7 +592,7 @@ class client:
 
             elif (event == 'SENDATTACH'):
 
-                window['_CLIENT_'].print('c> SENDATTACH ' + values['_INDEST_'] + " " + values['_IN_'] + " " + values['_FILE_'])
+                window['_CLIENT_'].print('c> SENDATTACH ' + values['_INDEST_'] + ' ' + values['_IN_'] + " " + values['_FILE_'])
 
                 if (values['_INDEST_'] != '' and values['_IN_'] != '' and values['_FILE_'] != '') :
                     client.sendAttach(values['_INDEST_'], values['_IN_'], values['_FILE_'], window)
