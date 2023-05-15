@@ -73,8 +73,8 @@ def connect(sd, client):
 
         # test receiving messages
 
-        sendString("SEND MESSAGE", client_sd)
-        print("s>", "SEND MESSAGE")
+        sendString("SEND_MESSAGE", client_sd)
+        print("s>", "SEND_MESSAGE")
         sendString("pepe", client_sd)
         print("s>", "pepe")
         sendString(alias, client_sd)
@@ -124,8 +124,8 @@ def send_good(sd):
         client_sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_sd.connect(client_addr)
 
-        sendString("SEND MESS ACK", client_sd)
-        print("s>", "SEND MESS ACK")
+        sendString("SEND_MESS_ACK", client_sd)
+        print("s>", "SEND_MESS_ACK")
         sendString("69", client_sd)
         print("s>", "69")
     except:

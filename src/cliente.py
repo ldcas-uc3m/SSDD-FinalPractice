@@ -82,10 +82,11 @@ class client:
 
                 # read message
                 op = readString(client.listen_sd)
-                if op not in ("SEND MESSAGE", "SEND MESS ACK"):
+                if op not in ("SEND_MESSAGE", "SEND_MESS_ACK"):
+                    print("Bad opcode in listen thread")
                     continue
 
-                if op == "SEND MESS ACK":
+                if op == "SEND_MESS_ACK":
                     id = readString(client.listen_sd)
                     window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
 
@@ -327,7 +328,9 @@ class client:
             match int(readString(sd)):
                 case 0:
                     # get message id
+                    print("send ok")
                     id = readString(sd)
+                    print("received id")
                     window['_SERVER_'].print("s> SEND OK - MESSAGE " + id)
 
                 case 1:

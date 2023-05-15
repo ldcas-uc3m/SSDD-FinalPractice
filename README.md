@@ -596,7 +596,7 @@ En este caso recibirá a continuación una cadena de caracteres que codificará 
 ### 8.6 Envío de un mensaje servidor-cliente
 Cuando el servidor quiere enviarle a un usuario registrado y conectado un mensaje de otro usuario realizará las siguientes acciones (por cada mensaje a enviar):
 1. Se conecta al thread de escucha del cliente (de acuerdo a la IP y puerto almacenado para ese cliente).
-2. Se envía la cadena `SEND MESSAGE` indicando la operación.
+2. Se envía la cadena `SEND_MESSAGE` indicando la operación.
 3. Se envía una cadena con el nombre que identifica al usuario (alias) que envía el mensaje.
 4. Se envía una cadena codificando en ella el identificador asociado al mensaje.
 5. Se envía una cadena con el mensaje (todos los mensajes tendrán como mucho 256 bytes incluido el código `\0`, este tamaño lo controlará el cliente).
@@ -606,7 +606,7 @@ Si se produce algún error durante esta operación, el mensaje se considerará n
 
 Una vez enviado el mensaje, el servidor tiene que notificar al usuario que envío el mensaje (remitente) del mensaje de esta recepción. Para ello el servidor realiza las siguientes acciones:
 1. Se conecta al thread de escucha del cliente remitente del mensaje (de acuerdo a la IP y puerto almacenado para ese cliente).
-2. Se envía la cadena `SEND MESS ACK` indicando la operación.
+2. Se envía la cadena `SEND_MESS_ACK` indicando la operación.
 3. Se envía una cadena codificando en ella el identificador asociado al mensaje que se ha entregado.
 4. Cierra la conexión.
 
