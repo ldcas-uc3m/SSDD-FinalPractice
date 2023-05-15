@@ -200,7 +200,8 @@ int sendAck(char* aliasSender, int identifier){
         client_addr.sin_addr.s_addr = inet_addr(IP);
         client_addr.sin_family = AF_INET;
         client_addr.sin_port = htons(port);
-        if (connect(new_socket, (struct sockaddr *) &client_addr, sizeof(client_addr))==-1){
+        int res = connect(new_socket, (struct sockaddr *) &client_addr, sizeof(client_addr));
+        if (res==-1){
             Log("Error when connecting to the user");
             return -1;
         }else{
@@ -463,9 +464,9 @@ void *tratar_peticion(void* args) {
             sendMessage(local_sd, buffer, strlen(buffer) + 1);
             int res2 = deliver_Message(alias2, alias,identifier);
             if (res2==-1){
-                printf("SEND MESSAGE %d FROM %s to %s STORED\n", identifier, alias, alias2);
+                printf("s>SEND MESSAGE %d FROM %s to %s STORED\n", identifier, alias, alias2);
             }else{
-                printf("SEND MESSAGE %d FROM %s to %s\n", identifier, alias, alias2);
+                printf("s>SEND MESSAGE %d FROM %s to %s\n", identifier, alias, alias2);
                 confirm_received(alias2, identifier);
             }  
         }

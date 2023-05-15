@@ -405,7 +405,7 @@ int unregisterUser(List* l, char* alias){
 }
 
 int sendMessageStore(List* l, char* aliasSender, char* aliasRecieved, char* message, int* identifier){
-        pthread_mutex_lock(&mutex_list);
+    pthread_mutex_lock(&mutex_list);
     
     List aux = *l;
     
