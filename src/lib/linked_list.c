@@ -113,7 +113,7 @@ int storeMessage(Mensajes* l, char* aliasSender, char* message, int* identifier)
     // allocate memory for value1
     ptr->sender = (char*) malloc(MAX_CHAR);  // new string
     ptr->mensaje = (char*) malloc(MAX_CHAR);  // new string
-    if (ptr->sender == NULL || ptr->sender == NULL) {  // failed allocation
+    if (ptr->sender == NULL || ptr->mensaje == NULL) {  // failed allocation
         free(ptr);
 
         Log("malloc() fail\n");
@@ -627,7 +627,7 @@ int confirmReceived(List *l, char* aliasReceiver, int identifier){
     if(response == -1){
         Log("Error when setting a message as sent\n");
         pthread_mutex_unlock(&mutex_list);
-
+        return -1;
     }
     node1->lastIDSent = identifier;
     pthread_mutex_unlock(&mutex_list);
