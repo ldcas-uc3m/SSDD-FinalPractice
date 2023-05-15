@@ -459,15 +459,15 @@ void *tratar_peticion(void* args) {
         sendMessage(local_sd, buffer, strlen(buffer) + 1);
     
         if (result == 0){
+            sprintf(buffer, "%i", identifier);
+            sendMessage(local_sd, buffer, strlen(buffer) + 1);
             int res2 = deliver_Message(alias2, alias,identifier);
             if (res2==-1){
                 printf("SEND MESSAGE %d FROM %s to %s STORED\n", identifier, alias, alias2);
             }else{
                 printf("SEND MESSAGE %d FROM %s to %s\n", identifier, alias, alias2);
                 confirm_received(alias2, identifier);
-            }
-            sprintf(buffer, "%i", identifier);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
+            }  
         }
 
     } else if (strcmp("CONNECTEDUSERS", opcode)==0){
