@@ -333,8 +333,6 @@ int registerUser(List* l, char* username, char* alias, char* datetime){
     Log("Guardando %s\n",ptr->alias);
     Log("Guardando %s\n",ptr->datetime);
 
-
-    // TODO link to the list
     if (*l == NULL) {  // emtpy list, insert in head
         // pthread_mutex_lock(&mutex_list);
         *l = ptr;
@@ -411,6 +409,7 @@ int sendMessageStore(List* l, char* aliasSender, char* aliasRecieved, char* mess
     
     List node1 = NULL;
     List node2 = NULL;
+
     while (aux != NULL) {
         if (strcmp(aux->alias,aliasRecieved)==0) {
             node1 = aux;
