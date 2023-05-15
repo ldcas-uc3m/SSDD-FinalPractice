@@ -361,7 +361,7 @@ int unregisterUser(List* l, char* alias){
         pthread_mutex_unlock(&mutex_list);
         return 1;
     }
-    
+
     if (strcmp(alias,(*l)->alias) == 0) {
         aux = *l;
         *l = (*l)->next;
@@ -541,6 +541,7 @@ int listConnected(List* l, char** users){
     while (aux!=NULL){
         if (aux->connected == true){
             strcpy(users[number],aux->username);
+            number++;
         }
         aux = aux->next;
     }

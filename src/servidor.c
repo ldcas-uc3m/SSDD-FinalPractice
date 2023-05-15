@@ -293,7 +293,8 @@ int sendListUsers(int local_sd, int connections, char** users){
     sendMessage(local_sd, buffer, strlen(buffer) + 1);
 
     int i;
-    for (i=0; i<(connections); i++){
+    for (i=0; i<=connections; i++){
+        printf("%s\n",users[i]);
         sprintf(buffer, "%s", users[i]);
         sendMessage(local_sd, buffer, strlen(buffer) + 1);
     }
@@ -455,6 +456,8 @@ void *tratar_peticion(void* args) {
             result=0;
         }
 
+        sprintf(buffer, "%i", result);
+        sendMessage(local_sd, buffer, strlen(buffer) + 1);
     
         if (result == 0){
             int res2 = deliver_Message(alias2, alias,identifier);
@@ -465,9 +468,6 @@ void *tratar_peticion(void* args) {
                 confirm_received(alias2, identifier);
             }
             sprintf(buffer, "%i", identifier);
-            sendMessage(local_sd, buffer, strlen(buffer) + 1);
-        }else{
-            sprintf(buffer, "%i", result);
             sendMessage(local_sd, buffer, strlen(buffer) + 1);
         }
 
@@ -481,7 +481,7 @@ void *tratar_peticion(void* args) {
         if (res!=-1){
             users = (char**) malloc(sizeof(char*) * connections);
             int i;
-            for (i=0;i< connections;i++){
+            for (i=0;i<=connections;i++){
                 users[i] = (char*)malloc(sizeof(char)*MAX_CHAR);
             }
             int res2 = connectedUsersServer(local_sd, &connections, users, ip_client);
