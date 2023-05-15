@@ -540,7 +540,7 @@ int listConnected(List* l, char** users){
 
     while (aux!=NULL){
         if (aux->connected == true){
-            strcpy(users[number],aux->username);
+            strcpy(users[number],aux->alias);
             number++;
         }
         aux = aux->next;

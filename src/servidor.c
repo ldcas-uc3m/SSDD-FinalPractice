@@ -294,7 +294,6 @@ int sendListUsers(int local_sd, int connections, char** users){
 
     int i;
     for (i=0; i<=connections; i++){
-        printf("%s\n",users[i]);
         sprintf(buffer, "%s", users[i]);
         sendMessage(local_sd, buffer, strlen(buffer) + 1);
     }
