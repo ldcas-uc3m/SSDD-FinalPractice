@@ -96,7 +96,7 @@ int unregisterUserServer(int local_sd, char* alias){
 
    //Recieve the alias
 
-    readLine(local_sd, &(alias), MAX_LINE);
+    readLine(local_sd, alias, MAX_LINE);
 
    //Unregister
 
@@ -114,7 +114,7 @@ int connectUserServer(int local_sd, char* alias, int* nonSent, int* lastSent, ch
 
     //Receive the alias
 
-    readLine(local_sd, &(alias), MAX_LINE);
+    readLine(local_sd, alias, MAX_LINE);
 
     //Receive the port
 
@@ -134,7 +134,7 @@ int disconnectUserServer(int local_sd, char* alias, char* IP){
 
     // Receive the alias
 
-    readLine(local_sd, &(alias), MAX_LINE);
+    readLine(local_sd, alias, MAX_LINE);
 
     // Disconnect the user
 
@@ -150,11 +150,11 @@ int sendMessageStoreServer(int local_sd, char* alias, char* alias2, int* identif
 
     //Receive the sender alias
 
-    readLine(local_sd, &(alias), MAX_LINE);
+    readLine(local_sd, alias, MAX_LINE);
 
     //Receive the receiver alias
 
-    readLine(local_sd, &(alias2), MAX_LINE);
+    readLine(local_sd, alias2, MAX_LINE);
 
     //Receive the message
 
@@ -338,17 +338,17 @@ void *tratar_peticion(void* args) {
 
         Log("Entering Register\n");
 
-        int result = registerUserServer(local_sd, alias);
+        int res = registerUserServer(local_sd, alias);
 
-        if (result==2){
+        if (res==2){
             Log("Error when registering the user\n");
             printf("REGISTER %s FAIL\n", alias);
             result = 2;
             
-        } else if (result==0){
+        } else if (res==0){
             printf("REGISTER %s OK\n", alias);
             result = 0;
-        } else if (result==1){
+        } else if (res==1){
             printf("REGISTER %s FAIL\n", alias);
             result = 1;
         }
@@ -360,14 +360,17 @@ void *tratar_peticion(void* args) {
 
         Log("Entering unregister\n");
 
-        if (unregisterUserServer(local_sd, alias)==2){
+
+        int res = unregisterUserServer(local_sd,alias);
+
+        if (res==2){
             Log("Error when unregistering the user\n");
             printf("UNREGISTER %s FAIL\n", alias);
             result=2;
-        } else if (unregisterUserServer(local_sd,alias)==1){
+        } else if (res==1){
             printf("UNREGISTER %s FAIL\n", alias);
             result=1;
-        } else if (unregisterUserServer(local_sd, alias)==0){
+        } else if (res==0){
             printf("UNREGISTER %s OK\n", alias);
             result=0;
         }
@@ -382,18 +385,20 @@ void *tratar_peticion(void* args) {
         int nonSent;
         int lastSent;
 
-        if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client)==3){
+        int res = connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client);
+
+        if (res==3){
             Log("Error when connecting the user\n");
             printf("CONNECT %s FAIL\n", alias);
             result=3;
-        } else if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client)==1){
+        } else if (res==1){
             printf("CONNECT %s FAIL\n", alias);
             result=1;
-        } else if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client) == 2){
+        } else if (res == 2){
             printf("CONNECT %s FAIL\n", alias);
             result=2;
 
-        } else  if (connectUserServer(local_sd, alias, &nonSent, &lastSent, ip_client)==0){
+        } else  if (res ==0){
             printf("CONNECT %s OK\n", alias);
             result=0;
         }
@@ -411,18 +416,20 @@ void *tratar_peticion(void* args) {
 
         Log("Entering disconnect\n");
 
-        if (disconnectUserServer(local_sd, alias, ip_client)==3){
+        int res = disconnectUserServer(local_sd, alias, ip_client);
+
+        if (res==3){
             Log("Error when disconnecting the user\n");
             printf("DISCONNECT %s FAIL\n", alias);
             result=3;
-        } else if (disconnectUserServer(local_sd, alias, ip_client)==1){
+        } else if (res == 1){
             printf("DISCONNECT %s FAIL\n", alias);
             result=1;
-        } else if (disconnectUserServer(local_sd, alias,ip_client) == 2){
+        } else if (res == 2){
             printf("DISCONNECT %s FAIL\n", alias);
             result=2;
 
-        } else  if (disconnectUserServer(local_sd, alias, ip_client)==0){
+        } else if (res== 0){
             printf("DISCONNECT %s OK\n", alias);
             result=0;
         } 
@@ -436,19 +443,22 @@ void *tratar_peticion(void* args) {
 
         char* alias2 = (char*) malloc(MAX_CHAR * sizeof(char));
         int identifier;
-        if (sendMessageStoreServer(local_sd, alias, alias2, &identifier)==2){
+        int res = sendMessageStoreServer(local_sd, alias, alias2, &identifier);
+        if (res==2){
             Log("Error when storing the message the user\n");
             printf("SEND MESSAGE FROM %s to %s FAIL\n", alias, alias2);
             result = 2;
-        }else if (sendMessageStoreServer(local_sd, alias, alias2, &identifier)==1){
+        }else if (res==1){
             printf("SEND MESSAGE FROM %s to %s FAIL\n", alias, alias2);
             result=1;
-        }else if (sendMessageStoreServer(local_sd, alias, alias2, &identifier)==0){
+        }else if (res==0){
             result=0;
         }
 
+    
         if (result == 0){
-            if (deliver_Message(alias2, alias,identifier)==-1){
+            int res2 = deliver_Message(alias2, alias,identifier);
+            if (res2==-1){
                 printf("SEND MESSAGE %d FROM %s to %s STORED\n", identifier, alias, alias2);
             }else{
                 printf("SEND MESSAGE %d FROM %s to %s\n", identifier, alias, alias2);
@@ -467,20 +477,22 @@ void *tratar_peticion(void* args) {
 
         int connections;
         char** users;
-        if (seeNumberConnected(&connections)!=-1){
+        int res = seeNumberConnected(&connections);
+        if (res!=-1){
             users = (char**) malloc(sizeof(char*) * connections);
             int i;
             for (i=0;i< connections;i++){
                 users[i] = (char*)malloc(sizeof(char)*MAX_CHAR);
             }
-            if (connectedUsersServer(local_sd, &connections, users, ip_client)==2){
+            int res2 = connectedUsersServer(local_sd, &connections, users, ip_client);
+            if (res2==2){
                 Log("Error when retrieving list of connected users\n");
                 printf("CONNECTEDUSERS FAIL\n");
                 result=2;
-            } else if (connectedUsersServer(local_sd, &connections, users, ip_client)==1){
+            } else if (res2==1){
                 printf("CONNECTEDUSERS FAIL\n");
                 result = 1;
-            } else if (connectedUsersServer(local_sd, &connections, users, ip_client)==0){
+            } else if (res2==0){
                 printf("CONNECTEDUSERS OK\n");
                 result = 0;
             }
