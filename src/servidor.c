@@ -243,7 +243,7 @@ int deliver_Message(char* alias, char* aliasSender, int identifier){
         return -1;
     }else{
         char buffer[MAX_LINE];
-        sprintf(buffer, "%s", "SEND_MESSAGE");
+        sprintf(buffer, "%s", "SEND MESSAGE");
         sendMessage(new_socket, buffer, strlen(buffer) + 1);
 
         sprintf(buffer, "%s", aliasSender);
