@@ -427,20 +427,20 @@ int sendMessageStore(List* l, char* aliasSender, char* aliasRecieved, char* mess
     if (node1 == NULL) { // key not found
         Log("Receiver not found\n");
         pthread_mutex_unlock(&mutex_list);
-        return -1;
+        return 1;
     } 
 
     if (node2 == NULL) { // key not found
         Log("Sender not found\n");
         pthread_mutex_unlock(&mutex_list);
-        return -1;
+        return 1;
     } 
 
     int response = storeMessage(&(node1->listMessages), aliasSender, message, identifier); 
     if(response==-1){
         Log("Error when storing the message");
         pthread_mutex_unlock(&mutex_list);
-        return -1;
+        return 2;
     }
     pthread_mutex_unlock(&mutex_list);
     return 0;
