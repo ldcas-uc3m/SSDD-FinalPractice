@@ -172,7 +172,9 @@ int connectedUsersServer(int local_sd, int* connections, char** users, char* IP)
         Show the list of connected users to the server
     */
 
-    if (userConnected(IP)==1){
+    int result = userConnected(IP);
+
+    if (result==1){
         
         if (connectedUsers(users) == 0){
             return 0;
@@ -180,7 +182,7 @@ int connectedUsersServer(int local_sd, int* connections, char** users, char* IP)
             return 2;
         }
         
-    }else if (userConnected(IP) == 0){
+    }else if (result == 0){
         Log("User not connected\n");
         return 1;
     }else{
@@ -196,7 +198,13 @@ int sendAck(char* aliasSender, int identifier){
     int port;
     char* IP = (char*) malloc(MAX_LINE*sizeof(char));
 
-    if (getIPPort(aliasSender, IP, &port)==0){
+    printf("preIPPort\n");
+
+    int res0 = getIPPort(aliasSender, IP, &port);
+
+    printf("IP: %s, port: %d\n", IP, port);
+
+    if (res0==0){
         client_addr.sin_addr.s_addr = inet_addr(IP);
         client_addr.sin_family = AF_INET;
         client_addr.sin_port = htons(port);
@@ -277,7 +285,8 @@ int sendRemainingMessages(int local_sd, char* alias, int nonSent, int lastSent, 
     for (i=1;i<=nonSent;i++){
         int identifier = lastSent + i;
         char* aliasSender = (char*) malloc(MAX_CHAR*sizeof(char));
-        if (deliver_Message(alias, aliasSender, identifier)==-1 || deliver_Message(alias, aliasSender, identifier)==-2){
+        int res = deliver_Message(alias, aliasSender, identifier);
+        if (res==-1 || res ==-2){
             return -1;
         }
     }

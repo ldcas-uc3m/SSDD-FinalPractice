@@ -458,6 +458,9 @@ int ipPortInfo(List* l, char* aliasSender, char* IP, int* port){
         if (strcmp(aux->alias,aliasSender)==0) {  // found
             strcpy(IP, aux->IP);
             *port = aux->port;
+            printf("IP:%s", IP);
+            pthread_mutex_unlock(&mutex_list);
+            return 0;
         }else {  // next element
             aux = aux->next;
         }
