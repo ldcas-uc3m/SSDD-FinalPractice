@@ -328,9 +328,7 @@ class client:
             match int(readString(sd)):
                 case 0:
                     # get message id
-                    print("send ok")
                     id = readString(sd)
-                    print("received id")
                     window['_SERVER_'].print("s> SEND OK - MESSAGE " + id)
 
                 case 1:
