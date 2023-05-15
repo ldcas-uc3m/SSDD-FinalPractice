@@ -89,15 +89,14 @@ class client:
                 if op == "SEND_MESS_ACK":
                     id = readString(client.listen_sd)
                     window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
+                else:
+                    sender = readString(client.listen_sd)
+                    receiver = readString(client.listen_sd)
+                    msg = readString(client.listen_sd)
 
-                
-                sender = readString(client.listen_sd)
-                receiver = readString(client.listen_sd)
-                msg = readString(client.listen_sd)
-
-                window['_SERVER_'].print("s> MESSAGE " + receiver + " FROM " + sender)
-                window['_SERVER_'].print("   " + msg)
-                window['_SERVER_'].print("   END")
+                    window['_SERVER_'].print("s> MESSAGE " + receiver + " FROM " + sender)
+                    window['_SERVER_'].print("   " + msg)
+                    window['_SERVER_'].print("   END")
 
             except:
                 exit()

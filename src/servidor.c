@@ -241,6 +241,8 @@ int deliver_Message(char* alias, char* aliasSender, int identifier){
     int port;
     char IP[MAX_LINE];
 
+    Log("Delivering message\n");
+
     int existent = sendMessage_deliver(aliasSender, alias, message, identifier, IP, &port);
 
     if (existent == -1){
@@ -271,6 +273,8 @@ int deliver_Message(char* alias, char* aliasSender, int identifier){
         sprintf(buffer, "%s", message);
         sendMessage(new_socket, buffer, strlen(buffer) + 1);
 
+        Log("Antes de aqui el error\n");
+
         int res0 = sendAck(aliasSender, identifier);
 
         if (res0==-1){
@@ -299,6 +303,8 @@ int sendRemainingMessages(int local_sd, char* alias, int nonSent, int lastSent, 
         int res = deliver_Message(alias, aliasSender, identifier);
         if (res==-1 || res ==-2){
             return -1;
+        }else{
+            confirm_received(alias, identifier);
         }
     }
 

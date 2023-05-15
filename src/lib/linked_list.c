@@ -162,7 +162,7 @@ int notifyReceived(Mensajes* l, int identifier){
     }
 
     if (found==false){
-        Log("Identifier not found");
+        Log("Identifier not found\n");
         return -1;
     }
 
@@ -509,6 +509,7 @@ int sendMessageDeliver(List* l, char* aliasSender, char* aliasReceived, char* me
         strcpy(IP, node1->IP);
         *port = node1->port;
         pthread_mutex_unlock(&mutex_list);
+        Log("Getting message: %s\n",message);
         return 0;
     }else{
         Log("Message not found\n");
@@ -631,7 +632,8 @@ int confirmReceived(List *l, char* aliasReceiver, int identifier){
         pthread_mutex_unlock(&mutex_list);
         return -1;
     }
-    node1->lastIDSent = identifier;
+    node1->lastIDSent = identifier; 
+    Log("Setting %d as read\n", identifier);
     pthread_mutex_unlock(&mutex_list);
     return 0;
 }
