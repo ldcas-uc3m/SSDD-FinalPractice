@@ -14,8 +14,10 @@ El resto de pruebas consistieron en probar los distintos casos descritos en el e
     \item Connected users: se probó a ejecutar esta función tanto con usuarios conectados como no. Incluyendo varios clientes para comprobar si era capaz de reconocerlos.
     \item Registro: se probó a registrar usuarios ya registrados, incluyendo desde otra de las interfaces abiertas en paralelo. Además de registrar a los usuarios por primera vez.
     \item Baja del usuario: de la misma forma que en el registro, se intentó dar de baja usuarios desde otras interfaces (lo cual no es posible, y nuestra plataforma no lo permite). También se intentó dar de baja usuarios tanto existentes como no creados.
-    \item Envío de mensajes: esta funcionalidad se probó también tanto para uno como para varios clientes en paralelo
-    \subitem Envío de mensajes a sí mismo: comprobamos q era posible enviar solo tras conectar el usuario ya existente y que llegaban los mensajes de ack, además del texto del mensaje
-    \subitem Envío de mensajes a otro usuario: ejecutamos varios clientes al mismo tiempo, ambos conectados al servidor en una primera iteración para comprobar que se recibian mensajes (también mandados de manera consecutiva para ver la capacidad de la lista enlazada para guardar los mensajes). Después desconectamos un cliente y le enviamos mensajes para comprobar que una vez conectado recibía todos los mensajes anteriores(y el otro cliente recibía el ack en el caso de que siguiese conectado una vez encendiesemos el cliente receptor). Por último, intentamos mandar mensajes a clientes no existentes para ver si se generaba el error correspondiente.
+    \item Envío de mensajes: esta funcionalidad se probó también tanto para uno como para varios clientes en paralelo:
+    \begin{enumerate}
+        \item Envío de mensajes a sí mismo: comprobamos q era posible enviar solo tras conectar el usuario ya existente y que llegaban los mensajes de \texttt{ACK}, además del texto del mensaje.
+        \item Envío de mensajes a otro usuario: ejecutamos varios clientes al mismo tiempo, ambos conectados al servidor en una primera iteración para comprobar que se recibian mensajes (también mandados de manera consecutiva para ver la capacidad de la lista enlazada para guardar los mensajes). Después desconectamos un cliente y le enviamos mensajes para comprobar que una vez conectado recibía todos los mensajes anteriores(y el otro cliente recibía el \texttt{ACK} en el caso de que siguiese conectado una vez encendiesemos el cliente receptor). Por último, intentamos mandar mensajes a clientes no existentes para ver si se generaba el error correspondiente.
+    \end{enumerate}
 
 \end{enumerate}

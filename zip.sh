@@ -34,6 +34,11 @@ end=$(($(sed -n '/# Instalación y ejecución/{=; q;}' README) - 1))
 
 sed -i "$start","$end"'d' README  # remove lines
 
+# add authors
+cat > autores.txt <<EOFMARKER
+Luis Daniel Casais Mezquida - 100429021
+Lucía María Moya Sans - 100383016
+EOFMARKER
 
 # zip it (excluding useless stuff)
 echo "Zipping..."
@@ -43,3 +48,4 @@ zip -r $OUTFILE . -x zip.sh report/\* \*.git\* img/\* LICENSE README.md
 echo "Cleaning up..."
 rm README
 rm report.pdf
+rm autores.txt
