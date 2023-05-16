@@ -5,7 +5,8 @@ Debido a que esas partes ya estaban implementadas, no las detallaremos aquí.\ne
 
 Dado que la arquitectura del servidor es la de uno orientado a peticiones (usando \textit{sockets} TCP), cada una de las operaciones del cliente (halladas en la interfaz) consta de el mismo esquema general:
 \begin{enumerate}
-    \item Conectarse a la IP y puerto del servidor (proporcionados como argumentos en la línea de comandos) a través de un \textit{socket}, implementado en el método \texttt{client.socket\_connect()}.
+    \item Conectarse a la IP y puerto del servidor (proporcionados como argumentos en la línea de comandos) a través de un \textit{socket}, implementado en el método\\
+    \texttt{client.socket\_connect()}.
     \item Opcionalmente, realizar alguna acción requerida por el protocolo.
     \item Enviar la petición al servidor a través del socket.
     \item Esperar la respuesta del servidor.

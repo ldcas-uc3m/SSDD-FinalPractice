@@ -1,11 +1,12 @@
 \subsection{Servidor}
 
-El servidor está dividido en tres partes: linked\_list, server\_impl y servidor. Esto permite separar la funcionalidad principal, del acceso a las estructuras de datos.
+El servidor está dividido en tres partes: \texttt{linked\_list.c}, \texttt{server\_impl.c} y \texttt{servidor.c}.
+Esto permite separar la funcionalidad principal, del acceso a las estructuras de datos.\\
 
-La clase servidor es la que se encarga de la comunicación con el cliente. Implementa la lectura y escritura de los mensajes atendiendo al protocolo definido en esta práctica.
+El archivo \texttt{servidor.c} es el que se encarga de la comunicación con el cliente. Implementa la lectura y escritura de los mensajes atendiendo al protocolo definido en esta práctica.\\
 
-La función principal es tratar\_peticion que es la que determina que operación va a ejecutarse dependiendo del código que envíe el cliente (REGISTER, CONNECT, DISCONNECT...). En esta función también se redirige a los métodos específicos para llevar a cabo la tarea y se envía al cliente los códigos de resultado de la operación.
+La función principal es \texttt{tratar\_peticion()} que es la que determina que operación va a ejecutarse dependiendo del código que envíe el cliente (\texttt{REGISTER}, \texttt{CONNECT}, \texttt{DISCONNECT}...). En esta función también se redirige a los métodos específicos para llevar a cabo la tarea y se envía al cliente los códigos de resultado de la operación.\\
 
-También dentro de la función principal se encuentran subfunciones que se encargan de leer los inputs del cliente que depende de cada una de las tareas y llaman al codigo de server\_impl para que este último conecte con la estructura de datos y devuelva o guarde la información correspondiente.
+También dentro de la función principal se encuentran subfunciones que se encargan de leer los inputs del cliente que depende de cada una de las tareas y llaman al codigo de \texttt{server\_impl.c} para que éste último conecte con la estructura de datos y devuelva o guarde la información correspondiente.\\
 
-La clase de linked\_lists incluye la estructura enlazada de los usuarios. se define una lista cuyos nodos incluyen a los usuarios y otra lista hija donde se añaden cada uno de los mensajes. Los parámetros coinciden con los requeridos en la descripción de la práctica. Cada una de las funciones tiene en cuenta que puede haber un acceso concurrente por parte de varios hijos e implementa un sistema de mutex para controlar el acceso a secciones críticas de guardado de información.
+Los archivos \texttt{linked\_list.c} y \texttt{linked\_list.h} incluyen la estructura de lista enlazada donde se guardan los datos de los usuarios. Se define una lista cuyos nodos incluyen a los usuarios y otra lista hija donde se añaden cada uno de los mensajes. Los parámetros coinciden con los requeridos en la descripción de la práctica. Cada una de las funciones tiene en cuenta que puede haber un acceso concurrente por parte de varios hijos e implementa un sistema de mutex para controlar el acceso a secciones críticas de guardado de información.
