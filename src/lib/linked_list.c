@@ -1,5 +1,5 @@
 /*
-Implementación de una linked list que guarda tuplas (int key, char value1[], int value2, double value3)
+Implementación de linked list para guardar los datos de los clientes
 */
 
 #include <stdio.h>
@@ -10,7 +10,7 @@ Implementación de una linked list que guarda tuplas (int key, char value1[], in
 
 #include "linked_list.h"
 #include "comm.h"
-#include "../log.h"
+#include "log.h"
 
 pthread_mutex_t mutex_list;
 
@@ -19,7 +19,7 @@ Todas estas funciones devuelve 0 si se ejecutan con éxito y -1 en caso de algú
 */
 
 int destroyMessages(Mensajes* l){
-       /*
+    /*
     Elimina todos los elementos de la lista l.
     */
 

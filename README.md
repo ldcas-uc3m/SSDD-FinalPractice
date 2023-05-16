@@ -127,18 +127,19 @@ window["_CLIENT_"].print("TEXTO A MOSTRAR EN LA INTERFAZ")
 ```
 
 Donde `window["_CLIENT_"]` es la variable de la interfaz en la que se se escriben los mensajes de texto a mostrar en el cuadro de texto de la izquierda de la interfaz. En esta parte se irán mostrando los mensajes de interacción entre el cliente (usuario) y el servidor.  
+
 Cada vez que se desee mostrar un mensaje de texto en la parte derecha de la interfaz, asociada a los mensajes recibidos del servidor, se utilizará el siguiente fragmento de código:
 ```python
 window["_SERVER_"].print("TEXTO A MOSTRAR EN LA INTERFAZ")
 ```
-
 Donde `window["_SERVER_"]` es la variable de la interfaz en la que se se escriben los mensajes de texto a mostrar en el cuadro de texto de la derecha de la interfaz. En esta parte se irán mostrando los mensajes recibidos del servidor como respuesta a las peticiones realizadas por el cliente.  
-En lo que resta de memoria se utilizará el siguiente convenio para imprimir mensajes en los cuadros de texto de la intertaz. Los mensajes que se muestren en la parte derecha tendrán el siguiente formato:
+
+En lo que resta de memoria se utilizará el siguiente convenio para imprimir mensajes en los cuadros de texto de la intertaz. Los mensajes que se muestren en la parte izquierda tendrán el siguiente formato:
 ```
 c> TEXTO A MOSTRAR
 ```
 
-Los mensajes que se muestren en la parte izquierda tendrán el siguiente formato:
+Los mensajes que se muestren en la parte derecha tendrán el siguiente formato:
 ```
 s> TEXTO A MOSTRAR
 ```
@@ -681,12 +682,12 @@ python -m pip install PySimpleGUI
 
 Una vez se han instalado todos los paquetes previos, se podrá ejecutar el programa cliente de la siguiente forma:
 ```bash
-python3 ./client.py -s <server IP> -p <port> -ws <Webserver IP> -wp <Webserver port>
+python3 client.py -s <server IP> -p <port> -ws <Webserver IP> -wp <Webserver port>
 ```
 
 Por e.g.: 
 ```bash
-python3 ./client.py -s localhost -p 8888 -ws localhost -wp 8080
+python3 client.py -s localhost -p 8888 -ws localhost -wp 8080
 ```
 
 **Recordar que antes de lanzar el cliente es necesario lanzar el servidor web ([ver aquí](#webservice)).**
@@ -700,7 +701,7 @@ Cuenta con funciones para simular una respuesta del servidor, las cuales son lla
 Para ejecutarlo (importante hacerlo desde la carpeta [`test/`](src/test/), debido a los imports):
 ```bash
 cd src/test/
-python ./test_server.py <puerto>
+python test_server.py <puerto>
 ```
 
 
@@ -719,12 +720,12 @@ python -m pip install spyne
 
 Se podrá ejecutar el programa cliente de la siguiente forma:
 ```bash
-python3 ./ws-format-service.py -p <puerto>
+python3 ws-format-service.py -p <puerto>
 ```
 
 Por e.g.: 
 ```bash
-python3 ./ws-format-service.py -p 8080
+python3 ws-format-service.py -p 8080
 ```
 
 **Si el servidor y el WS ejecutan en la misma máquina, los puertos deben de ser distintos.**
@@ -745,8 +746,24 @@ python -m pip install zeep
 
 Y ejecutarlo:
 ```bash
-python .src/test/test_server.py -s <IP webservice> -p <puerto>
+python src/test/test_server.py -s <IP webservice> -p <puerto>
 ```
 
 
 ## Servidor
+
+Primero es necesario compilar con `make`:
+```bash
+cd src/
+make
+```
+
+Para ejecutar el servidor:
+```bash
+./servidor -p <port>
+```
+
+Por e.g.:
+```bash
+./servidor -p 8080
+```

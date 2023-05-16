@@ -1,5 +1,5 @@
 /*
-Server implementation for tuples
+Server implementation for linked list
 */
 
 #include <stdio.h>
@@ -11,7 +11,7 @@ Server implementation for tuples
 #include "server_impl.h"
 #include "linked_list.h"
 #include "comm.h"
-#include "../log.h"
+#include "log.h"
 
 List list = NULL;
 

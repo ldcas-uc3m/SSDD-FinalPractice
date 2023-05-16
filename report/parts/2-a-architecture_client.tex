@@ -21,4 +21,6 @@ Sin embargo, algunas operaciones sí que requirieron de ciertas decisiones de di
     \item La operación \texttt{SEND MESSAGE} (método \texttt{client.send()}) lanza una petición al servicio web de formateo de mensajes (método \texttt{client.format\_message()}, haciendo uso del módulo \href{https://pypi.org/project/zeep/}{zeep}) antes de enviar la petición. La IP y puerto del servicio son proporcionados como argumentos en la línea de comandos.
 \end{itemize}
 
-Durante toda la implementación del cliente se han usado bloques \texttt{try}-\texttt{except} para capturar posibles errores (conexión, etc), y mostrar un simple error en la interfaz en lugar de hacer que pare la ejecución.
+Durante toda la implementación del cliente se han usado bloques \texttt{try}-\texttt{except} para capturar posibles errores (conexión, etc), y mostrar un simple error en la interfaz en lugar de hacer que pare la ejecución.\\
+
+También se decidió que, al cerrar la interfaz del cliente se envía al servidor un \texttt{DISCONNECT} y un \texttt{UNREGISTER}.

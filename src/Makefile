@@ -1,4 +1,4 @@
-BIN_FILES  = servidor # testing
+BIN_FILES = servidor servidor_old
 VPATH = lib tests  # path with source files not found in current dir
 CC = gcc
 
@@ -10,11 +10,11 @@ LDLIBS = -pthread -lm -lrt
 all: $(BIN_FILES)
 .PHONY : all
 
-servidor: servidor.o server_impl.o linked_list.o lines.o log.o log.h
+servidor: servidor.o server_impl.o linked_list.o lines.o log.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) $^ -o $@
 	
-# testing: testing.o
-# 	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -L$(INSTALL_PATH) -lclaves $^ -o $@
+servidor_old: servidor_old.o server_impl.o linked_list.o lines.o log.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) $^ -o $@
 
 
 %.o: %.c

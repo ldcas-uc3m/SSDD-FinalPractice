@@ -1,3 +1,7 @@
+/*
+Socket send and receive functionalities
+*/
+
 #include <unistd.h>
 #include <errno.h>
 #include "lines.h"
