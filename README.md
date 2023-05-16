@@ -682,15 +682,15 @@ python -m pip install PySimpleGUI
 
 Una vez se han instalado todos los paquetes previos, se podrá ejecutar el programa cliente de la siguiente forma:
 ```bash
-python3 client.py -s <server IP> -p <port> -ws <Webserver IP> -wp <Webserver port>
+python3 src/client.py -s <server IP> -p <port> -ws <Webserver IP> -wp <Webserver port>
 ```
 
 Por e.g.: 
 ```bash
-python3 client.py -s localhost -p 8888 -ws localhost -wp 8080
+python3 src/client.py -s localhost -p 8888 -ws localhost -wp 8080
 ```
 
-**Recordar que antes de lanzar el cliente es necesario lanzar el servidor web ([ver aquí](#webservice)).**
+**Recordar que antes de lanzar el cliente es necesario lanzar el [servidor web](#webservice) y el [servidor](#servidor).**
 
 
 ### Tests del cliente
@@ -720,12 +720,12 @@ python -m pip install spyne
 
 Se podrá ejecutar el programa cliente de la siguiente forma:
 ```bash
-python3 ws-format-service.py -p <puerto>
+python3 src/ws-format-service.py -p <puerto>
 ```
 
 Por e.g.: 
 ```bash
-python3 ws-format-service.py -p 8080
+python3 src/ws-format-service.py -p 8080
 ```
 
 **Si el servidor y el WS ejecutan en la misma máquina, los puertos deben de ser distintos.**
@@ -752,7 +752,7 @@ python src/test/test_server.py -s <IP webservice> -p <puerto>
 
 ## Servidor
 
-Primero es necesario compilar con `make`:
+Primero es necesario compilar con `make` y `gcc`:
 ```bash
 cd src/
 make

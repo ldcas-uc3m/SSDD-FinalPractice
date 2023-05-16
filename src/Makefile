@@ -1,5 +1,5 @@
 BIN_FILES = servidor
-VPATH = lib tests  # path with source files not found in current dir
+VPATH = lib  # path with source files not found in current dir
 CC = gcc
 
 CFLAGS = -g -I$(INSTALL_PATH)/include -Wall -fPIC
@@ -25,6 +25,7 @@ tests: $(TEST_FILES)
 
 clean:
 	rm -f $(BIN_FILES) *.o
+	rm -rf lib/__pycache__
 
 
 .SUFFIXES:
