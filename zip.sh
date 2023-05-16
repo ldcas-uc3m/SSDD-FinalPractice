@@ -42,7 +42,7 @@ EOFMARKER
 
 # zip it (excluding useless stuff)
 echo "Zipping..."
-zip -r $OUTFILE . -x zip.sh report/\* \*.git\* img/\* LICENSE README.md
+zip -r $OUTFILE . -x zip.sh run.sh report/\* \*.git\* img/\* LICENSE README.md
 
 # cleanup
 echo "Cleaning up..."
