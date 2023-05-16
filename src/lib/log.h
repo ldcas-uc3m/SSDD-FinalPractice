@@ -2,7 +2,7 @@
 #define _LOG_H_
 
 // Activa o desactiva el sistema de logs
-#define LOG_ENABLE
+// #define LOG_ENABLE
 
 // Se utiliza para inicializar el sistema de logging
 void LogInit();
