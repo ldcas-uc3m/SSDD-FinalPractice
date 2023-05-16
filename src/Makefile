@@ -1,4 +1,4 @@
-BIN_FILES = servidor servidor_old
+BIN_FILES = servidor
 VPATH = lib tests  # path with source files not found in current dir
 CC = gcc
 
@@ -11,9 +11,6 @@ all: $(BIN_FILES)
 .PHONY : all
 
 servidor: servidor.o server_impl.o linked_list.o lines.o log.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) $^ -o $@
-	
-servidor_old: servidor_old.o server_impl.o linked_list.o lines.o log.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) $^ -o $@
 
 
