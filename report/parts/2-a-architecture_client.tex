@@ -17,10 +17,10 @@ Las implementaciones de las operaciones del cliente consisten en seguir el proto
 Sin embargo, algunas operaciones sí que requirieron de ciertas decisiones de diseño:
 \begin{itemize}
     \item La operación \texttt{CONNECT} (método \texttt{client.connect()}) inicia un socket de escucha en un puerto libre, e inicia un hilo (método \texttt{client.listen()}) encargado de aceptar conexiones a ese puerto, recibir las peticiones pertinentes (\texttt{SEND MESSAGE} y \texttt{SEND MESS ACK}), y mostrarlas en la interfaz.
-    \item La operación \texttt{DISCONNECT} (método \texttt{client.disconnect()}) cierra el puerto de escucha del cliente, generando una excepción en el hilo, la cual es capturada y hace que termine el hilo.
-    \item La operación \texttt{SEND MESSAGE} (método \texttt{client.send()}) lanza una petición al servicio web de formateo de mensajes (método \texttt{client.format\_message()}, haciendo uso del módulo \href{https://pypi.org/project/zeep/}{zeep}) antes de enviar la petición. La IP y puerto del servicio son proporcionados como argumentos en la línea de comandos.
+    \item La operación \texttt{DISCONNECT} (método \texttt{client.disconnect()}) cierra el puerto de escucha del cliente, generando una excepción en el hilo, la cual es capturada y hace que termine el hilo. Para el caso en el que ya haya entrado en el \texttt{accept()}, el hilo se lanza como \textit{daemon}, acabando cuando lo hace el proceso principal (el socket ya ha sido cerrado previamente, por lo que no hay problemas de recursos no cerrados).
+    \item La operación \texttt{SEND MESSAGE} (método \texttt{client.send()}) lanza una petición al servicio web de formateo de mensajes (método \texttt{client.format\_message()}, haciendo uso del módulo \href{https://pypi.org/project/zeep/}{\texttt{zeep}}) antes de enviar la petición. La IP y puerto del servicio son proporcionados como argumentos en la línea de comandos.
 \end{itemize}
 
 Durante toda la implementación del cliente se han usado bloques \texttt{try}-\texttt{except} para capturar posibles errores (conexión, etc), y mostrar un simple error en la interfaz en lugar de hacer que pare la ejecución.\\
 
-También se decidió que, al cerrar la interfaz del cliente se envía al servidor un \texttt{DISCONNECT} y un \texttt{UNREGISTER}.
+También se decidió que, al cerrar la interfaz del cliente se envía al servidor un \texttt{DISCONNECT} y un \texttt{UNREGISTER} al servidor.
