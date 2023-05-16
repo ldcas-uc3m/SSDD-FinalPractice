@@ -7,4 +7,15 @@ Durante la realización de la práctica y, para probar independientemente la com
     \item \texttt{src/test/test\_webservice\_client.py}: Cliente del servicio web que permite probar el servicio a través de la consola.
 \end{enumerate}
 
-El resto de pruebas consistieron en probar los distintos casos descritos en el enunciado, como por ejemplo enviar mensajes entre dos clientes, desconectar uno, y comprobar que al reconectarse el mensaje era recibido. También enviar mensajes de un cliente a sí mismo.
+El resto de pruebas consistieron en probar los distintos casos descritos en el enunciado, como por ejemplo enviar mensajes entre dos clientes, desconectar uno, y comprobar que al reconectarse el mensaje era recibido. También enviar mensajes de un cliente a sí mismo. El resumen de los tests realizados (tanto independientemente por parte del servidor y del cliente con sus respectivos cliente y servidor de prueba, como mediante interacción directa es el siguiente):
+\begin{enumerate}
+    \item Conexión de cliente: se realizaron tests para comprobar la conexión de un cliente registrado, no registrado, desconectado y previamente conectado.
+    \item Desconexión: se siguió la misma lógica que con los tests de conexión, probando las diferentes combinaciones posibles.
+    \item Connected users: se probó a ejecutar esta función tanto con usuarios conectados como no. Incluyendo varios clientes para comprobar si era capaz de reconocerlos.
+    \item Registro: se probó a registrar usuarios ya registrados, incluyendo desde otra de las interfaces abiertas en paralelo. Además de registrar a los usuarios por primera vez.
+    \item Baja del usuario: de la misma forma que en el registro, se intentó dar de baja usuarios desde otras interfaces (lo cual no es posible, y nuestra plataforma no lo permite). También se intentó dar de baja usuarios tanto existentes como no creados.
+    \item Envío de mensajes: esta funcionalidad se probó también tanto para uno como para varios clientes en paralelo
+    \subitem Envío de mensajes a sí mismo: comprobamos q era posible enviar solo tras conectar el usuario ya existente y que llegaban los mensajes de ack, además del texto del mensaje
+    \subitem Envío de mensajes a otro usuario: ejecutamos varios clientes al mismo tiempo, ambos conectados al servidor en una primera iteración para comprobar que se recibian mensajes (también mandados de manera consecutiva para ver la capacidad de la lista enlazada para guardar los mensajes). Después desconectamos un cliente y le enviamos mensajes para comprobar que una vez conectado recibía todos los mensajes anteriores(y el otro cliente recibía el ack en el caso de que siguiese conectado una vez encendiesemos el cliente receptor). Por último, intentamos mandar mensajes a clientes no existentes para ver si se generaba el error correspondiente.
+
+\end{enumerate}
