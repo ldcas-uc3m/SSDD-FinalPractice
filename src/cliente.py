@@ -42,7 +42,7 @@ class client:
         try:
             sd.connect(server)
         except Exception as e:
-            print("Error en la conexión")
+            print("Error en la conexión al servidor")
             raise e
 
         return sd
@@ -70,34 +70,33 @@ class client:
     # *
     # * @brief Receiving messages from the server
     # *
-    # * @param sd       - client socket
     # * @param window   - client window
-    def listen(sd: socket.socket, window: sg.Window):
-        sd.listen(True)
+    def listen(sd, window: sg.Window):
+        client.listen_sd.listen(True)
 
         while True:
             try:
-                client.listen_sd = sd.accept()[0]
+                new_sd = client.listen_sd.accept()[0]
             
-
                 # read message
-                op = readString(client.listen_sd)
-                if op not in ("SEND_MESSAGE", "SEND_MESS_ACK"):
-                    print("Bad opcode in listen thread")
-                    continue
+                op = readString(new_sd)
 
-                if op == "SEND_MESS_ACK":
-                    id = readString(client.listen_sd)
-                    window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
-                else:
-                    sender = readString(client.listen_sd)
-                    receiver = readString(client.listen_sd)
-                    msg = readString(client.listen_sd)
+                if op == "SEND_MESSAGE":
+                    sender = readString(new_sd)
+                    receiver = readString(new_sd)
+                    msg = readString(new_sd)
 
                     window['_SERVER_'].print("s> MESSAGE " + receiver + " FROM " + sender)
                     window['_SERVER_'].print("   " + msg)
                     window['_SERVER_'].print("   END")
+                    
+                elif op == "SEND_MESS_ACK":
+                    id = readString(new_sd)
+                    window['_SERVER_'].print("s> SEND MESSAGE " + id + " OK")
+                else:
+                    print("Bad opcode in listen thread")
 
+                new_sd.close()
             except:
                 exit()
 
@@ -123,7 +122,6 @@ class client:
 
             # wait for result
 
-
             match int(readString(sd)):
                 # yeah, it's FUCKING hardcoded, because FUCK enums and matches
                 case 0:
@@ -131,18 +129,22 @@ class client:
                 
                 case 1:
                     window['_SERVER_'].print("s> USERNAME IN USE")
+                    client._alias = None  # reset
                 
                 case 2:
                     window['_SERVER_'].print("s> REGISTER FAIL")
+                    client._alias = None
                 
                 case _:
                     window['_SERVER_'].print("s> REGISTER FAIL")
+                    client._alias = None
             
             sd.close()
 
         except:
             sd.close()
             window['_SERVER_'].print("s> REGISTER FAIL")
+            client._alias = None
 
 
     # *
@@ -166,7 +168,10 @@ class client:
             match int(readString(sd)):
                 case 0:
                     window['_SERVER_'].print("s> UNREGISTER OK")
+                    # clean variables
                     client._alias = None
+                    client._username = None
+                    client._date = None
                 
                 case 1:
                     window['_SERVER_'].print("s> USER DOES NOT EXIST")
@@ -202,6 +207,7 @@ class client:
 
         # create thread
         client.listen_thread = threading.Thread(target=client.listen, args=(client.listen_sd, window))
+        client.listen_thread.daemon = True  # make it a daemon, so when the program exits, it terminates
         client.listen_thread.start()
 
         # send message
@@ -237,8 +243,7 @@ class client:
             
             sd.close()
 
-        except Exception as e:
-            print(e)
+        except:
             sd.close()
             window['_SERVER_'].print("s> CONNECT FAIL")
         
@@ -250,15 +255,11 @@ class client:
     @staticmethod
     def disconnect(alias, window: sg.Window):
 
-        if client.listen_sd == None:
-            window['_CLIENT_'].print("c> DISCONNECT FAIL")
-            return
-
         # close socket
         try:
             client.listen_sd.close()
-        except Exception as e:
-            print(e)
+        except:
+            pass
 
         client.listen_sd = None
 
@@ -306,7 +307,6 @@ class client:
     # *
     @staticmethod
     def send(alias_src, alias_dst, message, window: sg.Window):
-        # print("SEND " + alias_dst + " " + message)
         try:
             sd = client.socket_connect()
         except:
@@ -411,8 +411,7 @@ class client:
 
             sd.close()
 
-        except Exception as e:
-            print(e)
+        except:
             sd.close()
             window['_SERVER_'].print("s> CONNECTED USERS FAIL")
 
@@ -566,6 +565,9 @@ class client:
 
 
             elif (event == 'CONNECT'):
+                if client.listen_sd != None:
+                    sg.Popup('ALREADY CONNECTED', title='ERROR', button_type=5, auto_close=True, auto_close_duration=1)
+                    continue
                 window['_CLIENT_'].print('c> CONNECT ' + client._alias)
                 client.connect(client._alias, window)
 
@@ -612,10 +614,17 @@ class client:
 
             window.Refresh()
 
+        # exit
+
+        if client.listen_sd != None:  # user is connected
+            client.disconnect(client._alias, window)
+
+        if client._alias != None:  # user is registered
+            client.unregister(client._alias, window)
+
         window.Close()
 
 
 
 if __name__ == '__main__':
     client.main([])
-    print("+++ FINISHED +++")
