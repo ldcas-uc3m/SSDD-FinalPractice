@@ -1,0 +1,5 @@
+\section{Conclusiones}
+
+La mayor parte de los problemas que tuvimos fueron en la parte de la comunicación, principalmente por no implementar correctamente el protocolo (fallos sintácticos, mensajes que no estábamos enviando...). También contamos con muchos problemas con la parte del almacenamiento (la linked list), ya que nos faltaban \texttt{malloc()}s, o no habíamos desbloqueado \textit{mutexes}, o intentábamos comparar punteros en vez de cadenas de caracteres con \texttt{strcmp()}...\\
+
+En la parte del cliente, hubo una cierta ”curva de aprendizaje” al inicio mientras nos acostumbrábamos al código proporcionado y sus interfaces, y después no fuimos capaces de usar \texttt{match} con los códigos proporcionados en el \texttt{Enum}. Finalmente, hubo bastantes prob- lemas implementando el hilo de escucha, especialmente hacer que acabara en la desconexión. En general, nos ha parecido un trabajo muy interesante, y hemos aprendido muchísimo tanto de C como de Python, de sockets, de hilos, de concurrencia, y de protocolos de paso de mensajes.
