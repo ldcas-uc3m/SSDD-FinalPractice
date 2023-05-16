@@ -1,1 +1,7 @@
 \subsection{Servidor}
+Para ejecutar el servidor hay que ejecutar el archivo makefile que está incluido dentro de la carpeta de src. Se incluyen los archivos de linked\_list, server\_impl y los archivos de log (que permiten crear mensajes que se muestran por consola durante el modo debug para rastrear posibles errores).
+
+La ejecución del servidor se hace después de la compilación, incluyendo una flag -p tras la que se indica el puerto que el servidor utilizará para la conexión.
+\begin{lstlisting}
+    ./servidor -p puerto
+\end{lstlisting}
